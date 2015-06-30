@@ -1,8 +1,7 @@
 var config = require('./config'),
     mongoose = require('mongoose'),
-    redis = require('socket.io-redis')
+    redis = require('socket.io-redis'),
     express = require('express'),
-    io = require('socket.io')(3000),
     router = express.Router(),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
@@ -15,10 +14,6 @@ var config = require('./config'),
 var chatio = require('./services/chatio');
 var AccountMdl = require('./models/account');
 var AccountCtl = require('./controllers/account');
-
-// Setup Adapter
-io.adapter(redis({ host: config.redis.host, port: config.redis.port }));
-
 
 // Globals
 var app = express();
@@ -59,7 +54,7 @@ var init = function() {
     ///////////////////////////////////////////////////////////////////////////////
     // Connect to elasticsearch                                                  //
     ///////////////////////////////////////////////////////////////////////////////
-    var server = app.listen(config.listenPort, function () {
+    var server = app.listen(config.port, function () {
 
       var host = server.address().address;
       var port = server.address().port;
@@ -69,7 +64,7 @@ var init = function() {
     ///////////////////////////////////////////////////////////////////////////////
     // Setup Socket.IO Chatio Service                                            //
     ///////////////////////////////////////////////////////////////////////////////
-    chatio.setup(server)
+    chatio.setup(server);
     return server;
 };
 

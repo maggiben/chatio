@@ -20,7 +20,8 @@ var environments = {
             }
         },
         environment: process.env.NODE_ENV,
-        listenPort: process.env.VCAP_APP_PORT || 8080,
+        port: process.env.OPENSHIFT_NODEJS_PORT || 8080,
+        ipaddr: process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
         allowCrossDomain: false,
         mongo: {
             hostname: 'paulo.mongohq.com',

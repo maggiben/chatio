@@ -36,8 +36,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Controllers
-var conf = require('../config'),
+var config = require('../config'),
     socketio  = require('socket.io'),
+    redis = require('socket.io-redis'),
     Account = require('../models/account');
 
 var users = [];
@@ -59,6 +60,8 @@ var io = null;
 exports.setup = function(server) {
     'use strict';
     io = socketio.listen(server);
+    // Setup Adapter
+    io.adapter(redis({ host: config.redis.host, port: config.redis.port }));
     io.set("log level", 1);
 
     ///////////////////////////////////////////////////////////////////////////////
