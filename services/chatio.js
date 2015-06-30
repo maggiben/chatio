@@ -37,18 +37,29 @@
 
 // Controllers
 var conf = require('../config'),
-    socketio  = require('socket.io')/*,
-    Account = require('../models/account')*/;
+    socketio  = require('socket.io'),
+    Account = require('../models/account');
 
-
-var rooms = ['global'];
-var users = {};
+var users = [];
+var rooms = [{
+    name: 'support',
+    private: false,
+    messages: [],
+    notifications: 0
+}, {
+    name: 'staging',
+    private: true,
+    users: ['bameggi', 'antonio'],
+    messages: [],
+    notifications: 0
+}];
 var sockets = [];
 var io = null;
 
 exports.setup = function(server) {
     'use strict';
     io = socketio.listen(server);
+    io.set("log level", 1);
 
     ///////////////////////////////////////////////////////////////////////////////
     // socket.io                                                                 //
@@ -57,25 +68,31 @@ exports.setup = function(server) {
 
         sockets.push(socket);
 
-        console.log("connection made")
+        updateClients(io);
+        updateClient(socket);
 
-        socket.emit('message', {
-            greet: 'hello',
-            user: socket.user
-        });
-
-        socket.on('userLoggedIn', function (data) {
-            console.log("userLoggedIn: ", data);
+        users.push({
+            name: '',
+            id: socket.id
         });
 
         socket.on('message', function (data) {
-            console.log('Data: ', data);
-            socket.emit('message', {
-                greet: data
+            console.log('message: ', socket.user.username, data);
+            data.rooms.forEach(function(room){
+                console.log("room: ", room);
+                io.sockets.in(room).emit('message', data);
             });
         });
         socket.on('disconnect', function () {
-            console.log("disconnect: ", socket.user);
+            console.log("disconnect: ", socket.id);
+            users = users.filter(function(user){
+                return user.id != socket.id;
+            });
+            /*socket.broadcast.in(roomOptions.name).emit("notifyRoom", {
+                text: socket.id + 'has left',
+                type: 'notifycation'
+            });*/
+            updateClients(io);
             return;
             var id = socket.user._id;
             // Remove Socket from list
@@ -84,13 +101,51 @@ exports.setup = function(server) {
             });
         });
 
+        socket.on('join', function(roomOptions) {
+
+            console.log('User Joins', JSON.stringify(roomOptions, null, 4));
+            var exists = rooms.some(function(room, index){
+                return room.name === roomOptions.name;
+            });
+            if(!exists) {
+                rooms.push(roomOptions);
+            }
+            var hasJoined = socket.user.rooms.some(function(room, index){
+                return room.name === roomOptions.name;
+            });
+            if(hasJoined) {
+                socket.emit('alert', 'You have already joined this room.');
+                return;
+            } else {
+                socket.user.rooms.push(roomOptions);
+            }
+            console.log(hasJoined)
+            socket.join(roomOptions.name);
+            socket.broadcast.in(roomOptions.name).emit("notifyRoom", {
+                rooms: [roomOptions.name],
+                data: socket.user.username + ' has joined',
+                type: 'notifycation'
+            });
+        });
+        socket.on('leave', function(room){
+            socket.leave(room);
+        });
     });
+    ///////////////////////////////////////////////////////////////////////////
+    // Handle disconect                                                      //
+    ///////////////////////////////////////////////////////////////////////////
     io.on('disconnect', function () {
         console.log("Socket disconnected");
-        io.sockets.emit('pageview', { 'connections': Object.keys(io.connected).length });
-    });/*
+        /*var index = users.map(function(user, index) {
+            if(user.id == id) {
+                return index;
+            }
+        }).filter(isFinite)[0];*/
+        updateClients(io);
+    });
     io.use(function(socket, next) {
         var token = socket.handshake.query.token;
+        console.log("got token: ", socket.handshake.query.token);
         if(token) {
             Account.verify(token, function(error, expired, decoded) {
                 if(error) {
@@ -101,6 +156,7 @@ exports.setup = function(server) {
                     return socket.disconnect('unauthorized');
                 } else {
                     socket.user = decoded;
+                    socket.user.rooms = [];
                     return next();
                 }
             });
@@ -110,37 +166,22 @@ exports.setup = function(server) {
         }
         //next();
     });
-    */
+
+    function updateClients(io) {
+        io.emit('update', {
+            rooms: rooms,
+            users: users
+        });
+    }
+
+    function updateClient(socket) {
+        socket.emit('updateClient', {
+            id: socket.id
+        });
+    }
 
     return io;
 };
 
-exports.notify = function(log, event) {
-    'use strict';
-    var notifySockets = sockets.filter(function(socket){
-        return (socket.user.digestors.indexOf(log.digestor) > -1);
-    });
-    var users = notifySockets.map(function(socket){
-        return socket.user;
-    });
-    // console.log("notify: ", event, log.digestor, users[0].username, io.sockets.socket);
-    // notify digestor owners
-    notifySockets.forEach(function(socket, index){
-        //socket.emit('message', {greet: socket.user._id});
-        Account.verify(socket.user.token.token, function(error, expired, decoded) {
-            if(error) {
-                socket.disconnect('unauthorized');
-                sockets.splice(index, 1);
-                return new Error('Invalid Token');
-            } else if(expired) {
-                socket.disconnect('unauthorized');
-                sockets.splice(index, 1);
-                return new Error('Token expired. You need to log in again.');
-            }
-        });
-
-        socket.emit('message', {log: log});
-    });
-};
 
 

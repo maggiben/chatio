@@ -6,12 +6,15 @@ var config = require('./config'),
     router = express.Router(),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
+    passport = require('passport'),
     path = require('path'),
     http = require('http'),
     https = require('https');
 
 // Internal Services
 var chatio = require('./services/chatio');
+var AccountMdl = require('./models/account');
+var AccountCtl = require('./controllers/account');
 
 // Setup Adapter
 io.adapter(redis({ host: config.redis.host, port: config.redis.port }));
@@ -45,14 +48,14 @@ var generateMongoUrl = function(conf) {
 var init = function() {
     'use strict';
 
-    var mongoUrl = null;
+    var mongo = null;
     var server = null;
 
-    mongoUrl = generateMongoUrl(config.mongo);
+    mongo = generateMongoUrl(config.mongo);
     ///////////////////////////////////////////////////////////////////////////////
     // Connect mongoose                                                          //
     ///////////////////////////////////////////////////////////////////////////////
-    //DB = mongoose.connect(mongoUrl);
+    mongoose.connect(mongo);
     ///////////////////////////////////////////////////////////////////////////////
     // Connect to elasticsearch                                                  //
     ///////////////////////////////////////////////////////////////////////////////
@@ -108,6 +111,31 @@ var allowCrossDomain = function(request, response, next) {
     }
 };
 
+// reusable middleware to test authenticated sessions
+function ensureAuthenticated(request, response, next) {
+    'use strict';
+
+    var token = request.headers.token;
+
+    if(token) {
+        AccountMdl.verify(token, function(error, expired, decoded) {
+            if(error) {
+                response.statusCode = 498;
+                response.json({error: 'Invalid token !'});
+            } else if(expired) {
+                response.statusCode = 401;
+                response.json({error: 'Token expired. You need to log in again.'});
+            } else {
+                request.user = decoded;
+                return next();
+            }
+        });
+    } else {
+        response.statusCode = 401;
+        response.json({error: 'No auth token received !'});
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration                                                             //
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,6 +148,9 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(allowCrossDomain);
 // Cookie Parser
 app.use(cookieParser());
 // Allow CORS
@@ -138,6 +169,39 @@ router.get('/', function(request, response) {
     //res.send('im the home page!');
     response.render('index', { title: 'Router' });
 });
+
+///////////////////////////////////////////////////////////////////////////////
+// Use passport.authenticate() as route middleware to authenticate the       //
+// request.                                                                  //
+// The first step in GitHub authentication will involve redirecting          //
+// the user to github.com.                                                   //
+// After authorization, GitHubwill redirect the user                         //
+// back to this application at /auth/github/callback                         //
+///////////////////////////////////////////////////////////////////////////////
+
+app.get('/auth/github', AccountCtl.githubAuth);
+app.get('/auth/github/callback', AccountCtl.githubAuthCallback);
+
+app.get('/auth/google', AccountCtl.googleAuth);
+app.get('/auth/google/return', AccountCtl.googleAuthCallback);
+// Regular user sign on sign off
+app.post('/user/signin', AccountCtl.signIn);
+app.get('/user/signout', ensureAuthenticated, AccountCtl.signOut);
+
+///////////////////////////////////////////////////////////////////////////////
+// User CRUD Methods & Servi                                                 //
+///////////////////////////////////////////////////////////////////////////////
+app.route('/user')
+    .post(AccountCtl.create)
+    .get(ensureAuthenticated, AccountCtl.read);
+app.route('/user/:id')
+    .get(ensureAuthenticated, AccountCtl.readOne)
+    .put(ensureAuthenticated, AccountCtl.update)
+    .delete(ensureAuthenticated, AccountCtl.delete);
+
+app.post('/user/forgot', AccountCtl.resetToken);
+app.post('/user/reset/:token', AccountCtl.resetPassword);
+app.post('/user/changepassword', AccountCtl.changePassword);
 
 app.use('/', router);
 

@@ -1,276 +1,190 @@
 doctype html
 html(ng-app="Runner", lang="en")
-    head
-        title API Runner
-        meta(charset="utf-8")
-        meta(http-equiv="X-UA-Compatible", content="IE=edge")
-        meta(name="robots", content="noindex, nofollow")
-        meta(name="viewport" content="width=device-width")
-        meta(name='description', content='Apicatus is a tool designed to mock, test, analyze and monitor APIs')
-        meta(name='author', content='Apicatus')
-        link(rel='icon', type='image/png', href='images/logo.png')
-        link(rel='apple-touch-icon-precomposed', sizes='144x144', href='images/apple-touch-icon-144-precomposed.png')
-        link(rel='apple-touch-icon-precomposed', sizes='114x114', href='images/apple-touch-icon-114-precomposed.png')
-        link(rel='apple-touch-icon-precomposed', sizes='72x72', href='images/apple-touch-icon-72-precomposed.png')
+  head
+    title API Runner
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="robots", content="noindex, nofollow")
+    meta(name="viewport" content="width=device-width")
+    meta(name='description', content='Apicatus is a tool designed to mock, test, analyze and monitor APIs')
+    meta(name='author', content='Apicatus')
+    link(rel='icon', type='image/png', href='images/logo.png')
+    link(rel='apple-touch-icon-precomposed', sizes='144x144', href='images/apple-touch-icon-144-precomposed.png')
+    link(rel='apple-touch-icon-precomposed', sizes='114x114', href='images/apple-touch-icon-114-precomposed.png')
+    link(rel='apple-touch-icon-precomposed', sizes='72x72', href='images/apple-touch-icon-72-precomposed.png')
 
-        // Main File
-        link(rel="stylesheet/less", type="text/css", href="less/chatio.less")
-        // Bootstrap
-        link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
-        // FontAwesome
-        link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
+    // Bootstrap
+    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
+    // FontAwesome
+    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
+    // Main Css File
+    link(rel="stylesheet/less", type="text/css", href="less/chatio.less")
 
-        // Socket.ico
-        script(src="http://localhost:8080/socket.io/socket.io.js")
-        // jQuery
-        script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js")
-        // jQuery-ui
-        script(src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js")
-        // lodash
-        script(src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.9.3/lodash.min.js")
-        // angular
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.1/angular.js")
-        // ui-bootstrap
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js")
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap.min.js")
-        // ui-utils
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js")
-        // ng-animate
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-animate.min.js")
-        // ui-router
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js")
-        // restangular
-        script(src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.5.1/restangular.min.js")
-        // Angular Local Storage
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular-local-storage/0.2.2/angular-local-storage.min.js")
-        // Angular Cookies
-        script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.1/angular-cookies.min.js")
-        // Less
-        script(src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js")
+    // Socket.ico
+    script(src="http://localhost:8080/socket.io/socket.io.js")
+    // jQuery
+    script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js")
+    // jQuery-ui
+    script(src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js")
+    // lodash
+    script(src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.9.3/lodash.min.js")
+    // angular
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.1/angular.js")
+    // ui-bootstrap
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.2/ui-bootstrap-tpls.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.2/ui-bootstrap.min.js")
+    // ui-utils
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js")
+    // ng-animate
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-animate.min.js")
+    // ui-router
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js")
+    // restangular
+    script(src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.5.1/restangular.min.js")
+    // Angular Local Storage
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-local-storage/0.2.2/angular-local-storage.min.js")
+    // Angular Cookies
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.1/angular-cookies.min.js")
+    // Less
+    script(src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js")
 
-        script(src="js/ngSocket.js")
-        script(src="js/ngAuth.js")
+    script(src="js/ngSocket.js")
+    script(src="js/ngAuth.js")
+    script(src="js/main.js")
 
-        style(type="text/css", media="screen, projection").
-            body {
-                margin-top: 50px;
-            }
-            [status="4XX"] {
-                color: #F00;
-            }
-            [status="5XX"] {
-                color: #FF0;
-            }
-            [status="2XX"] {
-                color: #0f0;
-            }
-        script.
-            var Runner = angular.module('Runner', [
-                'ui.bootstrap',
-                'ui.bootstrap.tpls',
-                'ui.router',
-                'ui.utils',
-                'ngCookies',
-                'LocalStorageModule',
-                'restangular',
-                'AuthService',
-                'ngSocket'
-            ]);
-            Runner.run(['$rootScope', '$state', 'Restangular', function($rootScope, $state, Restangular) {
+  body(ng-controller="MainCtrl as main")
+    nav(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+      div.container-fluid
+        div.navbar-header
+          a(ui-sref="home").navbar-brand
+            img(alt="Brand", src="images/logo.svg", width="20", height="20")
+        #bs-example-navbar-collapse-1.collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li.dropdown
+              a(href='#', data-toggle='dropdown', role='button', aria-expanded='false').dropdown-toggle
+                | {{user.email}}
+                span.fa.fa-fw.fa-angle-down
+              ul(role='menu').dropdown-menu
+                li
+                  a(href='#') Action
+                li
+                  a(href='#') Another action
+                li
+                  a(href='#') Something else here
+                li.divider
+                li
+                  a(href='#')
+                    i.fa.fa-fw.fa-power-off
+                    | Logout
+    div(ui-view="main").container-fluid
 
-                $rootScope.user = {
-                    name: 'Eltiro',
-                }
-                Restangular.oneUrl('user', 'http://api.apicat.us:8070/user/signin').customPOST({username: 'admin', password: 'admin'}).then(function(response){
-                    console.log(response)
-                });
+  // login
+  script(type="text/ng-template" id="login.html")
+    div.row
+      div.col-lg-12
+        div.page-header
+          h4
+            i.fa.fa-fw.fa-home
+            |&nbsp;Login
+    div.row.login-form
+      div.col-md-12
+        alert(ng-repeat='alert in login.alerts', type='{{login.alert.type}}', close='login.closeAlert($index)') {{alert.msg}}
+      div.col-md-12
+        div.panel.panel-default
+          div.panel-body
+            form.form-horizontal(name='loginForm', role='form', ng-submit='login.submit()')
+              div.form-group
+                div.col-sm-12
+                  div.input-group
+                    span.input-group-addon
+                      i.fa.fa-envelope
+                    input.form-control(type='text', ng-model='login.username', placeholder='Email', required='', autofocus='')
+              div.form-group
+                div.col-sm-12
+                  div.input-group
+                    span.input-group-addon
+                      i.fa.fa-unlock
+                    input.form-control(type='password', ng-model='login.password', required='', placeholder='Password')
+              div.form-group
+                div.col-sm-6
+                  button.btn.btn-primary(type='submit', ng-disabled='login.processing || !loginForm.$valid')
+                    i.fa.fa-fw.fa-spinner.fa-spin(ng-show='login.processing')
+                    | Sign In
+                div.col-sm-6
+                  a.btn.btn-default.pull-right(href='/auth/github')
+                    i.fa.fa-fw.fa-github
+                    | Login with GitHub
+              //a(ui-sref='main.user.forgot') Forgot ?
+          div.panel-footer Version 1
 
-            }]);
-            Runner.factory('mySocket', function (ngSocketFactory) {
-                var mySocket = ngSocketFactory({
-                  host: 'http://localhost:8080'
-                });
-                mySocket.forward('error');
-                return mySocket;
-            });
-            Runner.factory('uuid', [function() {
-                function s4() {
-                  return Math.floor((1 + Math.random()) * 0x10000)
-                      .toString(16)
-                      .substring(1);
-                }
-                return {
-                    newuuid: function() {
-                        // http://www.ietf.org/rfc/rfc4122.txt
-                        var s = [];
-                        var hexDigits = "0123456789abcdef";
-                        for (var i = 0; i < 36; i++) {
-                            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-                        }
-                        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-                        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-                        s[8] = s[13] = s[18] = s[23] = "-";
-                        return s.join("");
-                    },
-                    newguid: function() {
-                        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                            s4() + '-' + s4() + s4() + s4();
-                    }
-                }
-            }])
-            Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', function($stateProvider, $urlRouterProvider, RestangularProvider) {
-                //RestangularProvider.setBaseUrl('http://' + document.location.host);
-                RestangularProvider.setRestangularFields({
-                    id: '_id'
-                });
-                RestangularProvider.setDefaultHeaders({
-                    'Content-Type': 'application/json'
-                });
-                $urlRouterProvider.otherwise('/');
-                $stateProvider
-                    .state('home', {
-                        url: '/',
-                        views: {
-                            'main': {
-                                templateUrl: 'home.html',
-                                controller: 'HomeCtrl as home'
-                            }
-                        }
-                    });
-            }]);
-            Runner.controller('HomeCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', function($scope, mySocket, uuid,  $location, $anchorScroll) {
-              $scope.users = ['steve', 'anna'];
-              $scope.rooms = ['help', 'fun'];
+  // Home
+  script(type="text/ng-template" id="home.html")
+    div.row
+      div.col-lg-12
+        div.page-header
+          h4
+            i.fa.fa-fw.fa-home
+            |&nbsp;Home
+    div.row
+      div.col-lg-12
+        a.btn.btn-default(ui-sref="chat")
+          i.fa.fa-fw.fa-github
+          | Chat !
 
-              $scope.message = "hellox";
-              $scope.messages = ['poo', 'benja'];
+  // Chat
+  script(type="text/ng-template" id="chat.html")
+    div.row
+      div.col-lg-12
+        div.page-header
+          h4
+            i.fa.fa-fw.fa-home
+            |&nbsp;Chat
+    div.row
+      div.col-md-3
+        ul.list-group
+          li.list-group-item.active Available rooms
+            span.badge {{rooms.length}}
+          li.list-group-item(ng-repeat="room in serverRooms")
+            a(href="", ng-click="join(room)")
+              |{{room.name}}
+        ul.list-group
+          li.list-group-item.active List of users
+            span.badge {{users.length}}
+          li.list-group-item(ng-repeat="user in users") {{user.name}}
+      div.col-md-9
+        div.row
+          div.col-md-12
+            tabset.chat-rooms
+              tab(ng-repeat="room in activeRooms", active="room.isActive", select="activateRoom(room)")
+                tab-heading
+                  span(ng-if="room.notifications > 0").label.label-notifications.label-sm {{room.notifications}}
+                  | {{room.name}}
+                  i.fa.fa-fw.fa-times(ng-click="leave(room)")
+                div.panel-messages
+                  ul.messages(id="messages")
+                    li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type") {{message.user.username}}: {{message.data}}
+              tab(select="addRom()")
+                tab-heading
+                  i.fa.fa-fw.fa-plus
+                  | Add
+        div.row
+          div.col-md-12
+            div.input-group
+              input.form-control(type='text', ng-model="message")
+              div.input-group-btn
+                button.btn.btn-default(type='button', ng-click="send()") Send
+                button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+                  span.caret
+                  span.sr-only Toggle Dropdown
+                ul.dropdown-menu.dropdown-menu-right
+                  li
+                    a(href='#') Action
+                  li
+                    a(href='#') Another action
+                  li
+                    a(href='#') Something else here
+                  li.divider(role='separator')
+                  li
+                    a(href='#') Separated link
 
-              $scope.send = function() {
-                console.log("msg: ", $scope.message);
-                mySocket.emit('message', {
-                  data: $scope.message,
-                  rooms: ['xxx']
-                });
-              }
-
-              mySocket.on('message', function(result){
-                result.id = uuid.newuuid();
-                $scope.messages.push(result);
-                $location.hash(result.id);
-                $anchorScroll();
-              });
-            }]);
-            Runner.controller('MainCtrl', ['$scope', 'mySocket', function($scope, mySocket) {
-
-                console.log("started")
-                mySocket.on('message', function(result){
-                  result.id
-                    console.log('WebSocket: ', result);
-                    /*messanger.post({
-                        message: result.greet,
-                        showCloseButton: true
-                    });*/
-                });
-
-                mySocket.connect({
-                  host: 'http://localhost:8080'
-                });
-                mySocket.emit('userLoggedIn', {data: 'user.name'});
-
-            }]);
-    body(ng-controller="MainCtrl as main")
-        nav(role="navigation").navbar.navbar-inverse.navbar-fixed-top
-            div.container-fluid
-                div.navbar-header
-                    a(ui-sref="home").navbar-brand
-                        img(alt="Brand", src="images/logo.svg", width="20", height="20")
-                #bs-example-navbar-collapse-1.collapse.navbar-collapse
-                    ul.nav.navbar-nav
-                        li.dropdown
-                            a(href='#', role='button', aria-expanded='false').dropdown-toggle
-                                i.fa.fa-fw.fa-cubes
-                                |&nbsp;API Runners
-                                span.fa.fa-fw.fa-angle-down
-                            ul.dropdown-menu(role='menu')
-                                li(ui-sref-active="active")
-                                    a(ui-sref="runner")
-                                        i.fa.fa-fw.fa-home
-                                        |&nbsp;Runners
-                                li
-                                    a(href='#')
-                                        i.fa.fa-fw.fa-exchange
-                                        |&nbsp;Traffic
-                                li
-                                    a(href='#')
-                                        i.fa.fa-fw.fa-exclamation-triangle
-                                        |&nbsp;Errors
-                                li.divider
-                                li
-                                    a(href='#') Separated link
-                    ul.nav.navbar-nav.navbar-right
-                        li.dropdown
-                            a(href='#', data-toggle='dropdown', role='button', aria-expanded='false').dropdown-toggle
-                                | Benjamin@gmail.com
-                                span.fa.fa-fw.fa-angle-down
-                            ul(role='menu').dropdown-menu
-                                li
-                                    a(href='#') Action
-                                li
-                                    a(href='#') Another action
-                                li
-                                    a(href='#') Something else here
-                                li.divider
-                                li
-                                    a(href='#') Separated link
-        div(ui-view="main").container-fluid
-
-    // Home
-    script(type="text/ng-template" id="home.html")
-      div.row
-        div.col-lg-12
-          div.page-header
-            h4
-              i.fa.fa-fw.fa-home
-              |&nbsp;Chat
-      div.row
-        div.col-md-3
-          ul.list-group
-            li.list-group-item.active List of rooms
-              span.badge {{rooms.length}}
-            li.list-group-item(ng-repeat="room in rooms")
-              |{{room}}
-              span.badge {{room.notifications.length}}
-          ul.list-group
-            li.list-group-item.active List of users
-              span.badge {{users.length}}
-            li.list-group-item(ng-repeat="user in users") {{user}}
-        div.col-md-9
-          div.row
-            div.col-md-12
-              div.panel.panel-default
-                div.panel-heading Chat room: {{room}}
-                div.panel-body.panel-messages
-                  ul.list-unstyled(id="messages")
-                    li(ng-repeat="message in messages", id="{{message.id}}") {{message | json}}
-
-          div.row
-            div.col-md-12
-              div.input-group
-                input.form-control(type='text', ng-model="message")
-                div.input-group-btn
-                  button.btn.btn-default(type='button', ng-click="send()") Send
-                  button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-                    span.caret
-                    span.sr-only Toggle Dropdown
-                  ul.dropdown-menu.dropdown-menu-right
-                    li
-                      a(href='#') Action
-                    li
-                      a(href='#') Another action
-                    li
-                      a(href='#') Something else here
-                    li.divider(role='separator')
-                    li
-                      a(href='#') Separated link
-
-      div.row
+    div.row

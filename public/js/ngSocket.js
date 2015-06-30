@@ -67,7 +67,6 @@ angular.module('ngSocket', [
 
         return function socketFactory (options) {
             options = options || {};
-            console.log("optionsXX", options)
             var token = AuthService.getToken();
             var socket = options.ioSocket || io.connect(options.host, { 'query': 'token=' + token, 'secure': true });
             var prefix = options.prefix || defaultPrefix;
@@ -108,7 +107,6 @@ angular.module('ngSocket', [
                 },
 
                 connect: function(options) {
-                    console.log("options: ", options)
                     var token = AuthService.getToken();
                     socket = options.ioSocket || io.connect(options.host, { 'query': 'token=' + token, 'secure': true });
                     return socket;

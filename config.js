@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Primary configuration file                                                //
 ///////////////////////////////////////////////////////////////////////////////
-var os = require("os");
+var os = require('os');
 
 var environments = {
     ///////////////////////////////////////////////////////////////////////////
@@ -9,23 +9,29 @@ var environments = {
     ///////////////////////////////////////////////////////////////////////////
     production: {
         sessionSecret: process.env.SECRET,
-        email: {
-            user: "",
-            password: ""
+        oAuthServices: {
+            github: {
+                clientId: '1b147fb22f603248b539',
+                clientSecret: 'a326b2f318defb7910639ea0a10c735246a24672'
+            },
+            sendgrid: {
+                api_user: process.env.SENDGRID_USER || 'chatio',
+                api_key: process.env.SENDGRID_KEY || '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',
+            }
         },
         environment: process.env.NODE_ENV,
         listenPort: process.env.VCAP_APP_PORT || 8080,
         allowCrossDomain: false,
         mongo: {
-            hostname: "paulo.mongohq.com",
-            port: 10026,
+            hostname: 'paulo.mongohq.com',
+            port: 10040,
             username: process.env.MONGO_USER || 'admin',
             password: process.env.MONGO_PASS || 'admin',
-            name: "",
-            db: "apicatus"
+            name: '',
+            db: 'groopy'
         },
         redis: {
-            hostname: "localhost",
+            hostname: 'localhost',
             port: 6379
         }
     }
