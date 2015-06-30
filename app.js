@@ -54,7 +54,7 @@ var init = function() {
     ///////////////////////////////////////////////////////////////////////////////
     // Connect to elasticsearch                                                  //
     ///////////////////////////////////////////////////////////////////////////////
-    var server = app.listen(config.port, function () {
+    var server = app.listen(config.port, config.ipaddr, function () {
 
       var host = server.address().address;
       var port = server.address().port;
