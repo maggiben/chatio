@@ -32,8 +32,9 @@ var environments = {
             db: 'groopy'
         },
         redis: {
-            hostname: 'localhost',
-            port: 6379
+            hostname: 'pub-redis-18198.us-east-1-2.3.ec2.garantiadata.com',
+            port: 18198,
+            password: process.env.REDIS_PASS || 'GDoZLeROWqPySVF0'
         }
     }
 }

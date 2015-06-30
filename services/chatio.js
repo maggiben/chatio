@@ -38,7 +38,8 @@
 // Controllers
 var config = require('../config'),
     socketio  = require('socket.io'),
-    redis = require('socket.io-redis'),
+    redis = require('redis').createClient
+    adapter = require('socket.io-redis'),
     Account = require('../models/account');
 
 var users = [];
@@ -61,7 +62,10 @@ exports.setup = function(server) {
     'use strict';
     io = socketio.listen(server);
     // Setup Adapter
-    io.adapter(redis({ host: config.redis.host, port: config.redis.port }));
+    var pub = redis(config.redis.port, config.redis.hostname, { auth_pass: config.redis.password });
+    var sub = redis(config.redis.port, config.redis.hostname, { detect_buffers: true, auth_pass: config.redis.password });
+    //io.adapter(redis({ host: config.redis.hostname, port: config.redis.port }));
+    io.adapter(adapter({ pubClient: pub, subClient: sub }));
     io.set("log level", 1);
 
     ///////////////////////////////////////////////////////////////////////////////

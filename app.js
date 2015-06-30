@@ -1,6 +1,5 @@
 var config = require('./config'),
     mongoose = require('mongoose'),
-    redis = require('socket.io-redis'),
     express = require('express'),
     router = express.Router(),
     bodyParser = require('body-parser'),
