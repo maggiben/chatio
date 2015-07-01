@@ -22,7 +22,13 @@ gulp.task('lint', function() {
 // Mocha Task
 gulp.task('mocha', function() {
     return gulp.src(['test/**/*.js'])
-        .pipe(mocha({ reporter: 'nyan', timeout: 2000 }));
+        .pipe(mocha({ reporter: 'nyan', timeout: 5000 }))
+        .once('error', function () {
+            process.exit(1);
+        })
+        .once('end', function () {
+            process.exit();
+        });
 });
 
 // configure which files to watch and what tasks to use on file changes

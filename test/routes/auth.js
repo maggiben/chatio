@@ -26,17 +26,37 @@ describe('Auth', function(){
             .expect(401)
             .end(done);
     });
+
     it('should authenticate valid credentials', function(done){
+        request
+            .post('/user/signin')
+            .send({username: 'ariel', password: 'password'})
+            .expect(200)
+            .end(function(err, res){
+                  if (err) return done(err);
+                  expect(res.body).to.have.property('token');
+                  done();
+            });
+    });
+
+    it('should log out', function(done){
             request
                 .post('/user/signin')
                 .send({username: 'ariel', password: 'password'})
                 .expect(200)
                 .end(function(err, res){
-                      if (err) return done(err)
+                      if (err) return done(err);
                       expect(res.body).to.have.property('token');
-                      done();
+                      var token = res.body.token.token;
+                      request
+                        .get('/user/signout')
+                        .set('token', token)
+                        .expect(200)
+                        .end(function(err, res){
+                            done();
+                        });
                 });
-      });
+    });
 
     after(function(done){
         Account.findOneAndRemove({username: 'ariel'}, function(error, user){

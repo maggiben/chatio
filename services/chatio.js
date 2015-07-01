@@ -81,7 +81,7 @@ exports.setup = function(server) {
         db.set('chatio:connections:'+socket.user.username, socket.id);
 
         db.get('chatio:connections:'+socket.user.username, function(error, reply){
-            console.log("REDIS: ", reply)
+            //console.log("REDIS: ", reply)
         })
 
         sockets.push(socket);
@@ -96,7 +96,6 @@ exports.setup = function(server) {
         });
 
         socket.on('message', function (message) {
-            console.log("DATA: ", message)
             // lookup commands
             if(!commands(message, socket)) {
                 message.rooms.forEach(function(room){
@@ -121,6 +120,9 @@ exports.setup = function(server) {
                 }
             });
         });
+        ///////////////////////////////////////////////////////////////////////////
+        // Handle disconect                                                      //
+        ///////////////////////////////////////////////////////////////////////////
         socket.on('disconnect', function () {
             console.log("disconnect: ", socket.id);
             users = users.filter(function(user){
@@ -153,7 +155,6 @@ exports.setup = function(server) {
             });
             if(!exists) {
                 rooms.push(roomOptions);
-                console.log("new room: ", rooms[rooms.length - 1]);
             }
 
             // Has joined already
@@ -198,14 +199,16 @@ exports.setup = function(server) {
                 data: socket.user.username + ' has left',
                 type: 'notifycation'
             });
-            console.log('left: ', room);
         });
         socket.on('invite', function(options){
+            if(options.username === socket.user.username) {
+                socket.emit('alert', 'Cannot invite self.');
+                return;
+            }
             var index = getUserIndexByName(users, options.username);
             var room = getRoomIndexByName(rooms, options.room.name);
             if(room >= 0 && index >= 0){
                 // Update allowed list
-                console.log("rooms: ", rooms[room])
                 if(rooms[room].allowed.indexOf(options.username) < 0){
                     rooms[room].allowed.push(options.username);
                 }
@@ -213,24 +216,11 @@ exports.setup = function(server) {
                 updateSocketById(users[index].id);
                 io.to(users[index].id).emit('invite', options.room);
             }
-            console.log("room: ", options.room, options, room, rooms[room])
         });
     });
-    ///////////////////////////////////////////////////////////////////////////
-    // Handle disconect                                                      //
-    ///////////////////////////////////////////////////////////////////////////
-    io.on('disconnect', function () {
-        console.log("Socket disconnected");
-        /*var index = users.map(function(user, index) {
-            if(user.id == id) {
-                return index;
-            }
-        }).filter(isFinite)[0];*/
-        updateClients(io);
-    });
+
     io.use(function(socket, next) {
         var token = socket.handshake.query.token;
-        console.log("got token: ", socket.handshake.query.token);
         if(token) {
             Account.verify(token, function(error, expired, decoded) {
                 if(error) {
@@ -249,14 +239,11 @@ exports.setup = function(server) {
             next(new Error('not authorized'));
             return socket.disconnect('unauthorized');
         }
-        //next();
     });
 
     function getRoomIndexByName(rooms, name) {
         return rooms.map(function(room, index) {
-            //console.log("find: ", name, " in: ", room.name)
             if(room.name === name) {
-                console.log("index: ", index);
                 return index;
             }
         }).filter(isFinite)[0];
@@ -293,8 +280,6 @@ exports.setup = function(server) {
     }
 
     function commands(message, socket) {
-
-        console.log("commands: ")
         // find commands
         var expr = new RegExp(/(^|\s)^\/(\w+)/g);
         var command = message.data.match(expr);
@@ -302,14 +287,6 @@ exports.setup = function(server) {
             return false;
         }
         switch(command[0]) {
-            case '/pepe':
-                console.log("CALLED PEPE")
-                //http://s3.amazonaws.com/rapgenius/Daffy-Duck-Angry-icon.png
-                message.data = 'http://s3.amazonaws.com/rapgenius/Daffy-Duck-Angry-icon.png';
-                message.type = 'image';
-                socket.emit('message', message);
-                return true;
-            break;
             case '/giphy':
                 var search = message.data.replace('/giphy','').trim();
                 if(search.length < 1) {
