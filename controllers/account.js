@@ -413,7 +413,7 @@ exports.resetToken = function(request, response, next) {
                 return response.json({"title": "error", "message": "No user with that email found", "status": "fail"});
             } else {
                 var token = user.resetPasswordToken;
-                var resetLink = 'http://' + conf.baseUrl + ':' + conf.listenPort + '/#/main/user/reset/'+ token + '/' + user.email;
+                var resetLink = 'http://' + conf.baseUrl + ':' + conf.port + '/#/main/user/reset/'+ token + '/' + user.email;
 
                 //TODO: This is all temporary hackish. When we have email configured
                 //properly, all this will be stuffed within that email instead :)
@@ -490,7 +490,7 @@ exports.resetPassword = function(request, response, next) {
 passport.use(new GitHubStrategy({
         clientID: conf.oAuthServices.github.clientId,
         clientSecret: conf.oAuthServices.github.clientSecret,
-        callbackURL: 'http://app.' + conf.baseUrl + ':' + conf.listenPort + '/auth/github/callback',
+        callbackURL: 'http://chatio-laboratory.' + conf.baseUrl + ':' + conf.port + '/auth/github/callback',
         //callbackURL: "http://apicat.us/auth/github/callback",
         scope: ['user']
     },
@@ -567,7 +567,7 @@ exports.githubAuthCallback = function(request, response, next) {
 // profile), and invoke a callback with a user object.                       //
 ///////////////////////////////////////////////////////////////////////////////
 passport.use(new GoogleStrategy({
-        returnURL: 'http://app.' + conf.baseUrl + ':' + conf.listenPort + '/auth/google/return',
+        returnURL: 'http://app.' + conf.baseUrl + ':' + conf.port + '/auth/google/return',
         realm: 'http://app.' + conf.baseUrl
     },
     function(identifier, profile, done) {

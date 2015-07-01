@@ -5,6 +5,7 @@ var config = require('./config'),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     passport = require('passport'),
+    morgan = require('morgan'),
     path = require('path'),
     http = require('http'),
     https = require('https');
@@ -198,7 +199,7 @@ switch(process.env.NODE_ENV) {
         app.use(errorhandler({ dumpExceptions: true, showStack: true }));
     break;
     case 'test':
-        app.use(errorhandler());
+        app.use(morgan('combined'));
     break;
     case 'production':
 
