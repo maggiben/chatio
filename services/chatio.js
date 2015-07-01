@@ -50,7 +50,8 @@ var rooms = [{
     messages: [],
     notifications: 0,
     canInvite: true,
-    users: []
+    users: [],
+    allowed: []
 }, {
     name: 'staging',
     isPrivate: true,
@@ -68,7 +69,7 @@ exports.setup = function(server) {
     // Setup Adapter
     var pub = redis(config.redis.port, config.redis.hostname, { auth_pass: config.redis.password });
     var sub = redis(config.redis.port, config.redis.hostname, { detect_buffers: true, auth_pass: config.redis.password });
-    //io.adapter(redis({ host: config.redis.hostname, port: config.redis.port }));
+    var db = pub;
     io.adapter(adapter({ pubClient: pub, subClient: sub }));
     io.set("log level", 1);
 
@@ -76,6 +77,12 @@ exports.setup = function(server) {
     // socket.io                                                                 //
     ///////////////////////////////////////////////////////////////////////////////
     io.on('connection', function (socket) {
+
+        db.set('chatio:connections:'+socket.user.username, socket.id);
+
+        db.get('chatio:connections:'+socket.user.username, function(error, reply){
+            console.log("REDIS: ", reply)
+        })
 
         sockets.push(socket);
 
@@ -97,6 +104,8 @@ exports.setup = function(server) {
                     if(room === 'console') {
                         socket.emit('message', message);
                     } else {
+                        // add to history
+                        redis.lpush('chatio:channels:'+room+':history', socket.user.username+':'+message.data)
                         io.sockets.in(room).emit('message', message);
                     }
                 });
@@ -316,7 +325,14 @@ exports.setup = function(server) {
                     if(results.data.length > 0) {
                         message.data = results.data[0].images.fixed_width_small.url;
                         message.type = 'image';
-                        socket.emit('message', message);
+                        message.rooms.forEach(function(room){
+                            // Console is private !
+                            if(room === 'console') {
+                                socket.emit('message', message);
+                            } else {
+                                io.sockets.in(room).emit('message', message);
+                            }
+                        });
                     }
                 });
                 return true;
@@ -325,7 +341,7 @@ exports.setup = function(server) {
                 return false;
             break
         }
-
+        return false;
     }
 
     return io;

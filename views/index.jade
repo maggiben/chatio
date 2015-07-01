@@ -211,7 +211,7 @@ html(ng-app="Runner", lang="en")
                     div.col-sm-10.panel-messages
                       ul.messages(id="messages")
                         li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type")
-                          div(ng-if="message.type == 'text'")
+                          div(ng-if="message.type != 'image'")
                             span.author(ng-if="message.user.username") {{message.user.username}}:&nbsp;
                             span.content {{message.data}}
                           div(ng-if="message.type == 'image'")

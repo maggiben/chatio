@@ -6,7 +6,8 @@ var gulp   = require('gulp'),
     stylish = require('jshint-stylish'),
     nodemon = require('gulp-nodemon'),
     notify = require('gulp-notify'),
-    livereload = require('gulp-livereload');
+    livereload = require('gulp-livereload'),
+    mocha = require('gulp-mocha');
 
 // define the default task and add the watch task to it
 gulp.task('default', ['watch']);
@@ -20,7 +21,7 @@ gulp.task('lint', function() {
 
 // Mocha Task
 gulp.task('mocha', function() {
-    return gulp.src(['test/*.js'])
+    return gulp.src(['test/**/*.js'])
         .pipe(mocha({ reporter: 'nyan', timeout: 2000 }));
 });
 

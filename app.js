@@ -12,12 +12,13 @@ var config = require('./config'),
 
 // Internal Services
 var chatio = require('./services/chatio');
-var AccountMdl = require('./models/account');
-var AccountCtl = require('./controllers/account');
 
 // Globals
 var app = express();
-var router = express.Router();
+
+// Routes
+var homeRoutes = require('./routes/index');
+var authRoutes = require('./routes/auth');
 
 ////////////////////////////////////////////////////////////////////////////////
 // Mongo URL generator                                                        //
@@ -50,7 +51,7 @@ var init = function() {
     ///////////////////////////////////////////////////////////////////////////////
     // Connect to elasticsearch                                                  //
     ///////////////////////////////////////////////////////////////////////////////
-    var server = app.listen(config.port, config.ipaddr, function () {
+    server = app.listen(config.port, config.ipaddr, function () {
 
       var host = server.address().address;
       var port = server.address().port;
@@ -102,31 +103,6 @@ var allowCrossDomain = function(request, response, next) {
     }
 };
 
-// reusable middleware to test authenticated sessions
-function ensureAuthenticated(request, response, next) {
-    'use strict';
-
-    var token = request.headers.token;
-
-    if(token) {
-        AccountMdl.verify(token, function(error, expired, decoded) {
-            if(error) {
-                response.statusCode = 498;
-                response.json({error: 'Invalid token !'});
-            } else if(expired) {
-                response.statusCode = 401;
-                response.json({error: 'Token expired. You need to log in again.'});
-            } else {
-                request.user = decoded;
-                return next();
-            }
-        });
-    } else {
-        response.statusCode = 401;
-        response.json({error: 'No auth token received !'});
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration                                                             //
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,46 +126,11 @@ app.use(allowCrossDomain);
 app.use(express.static(path.join(__dirname, 'public')));
 
 ///////////////////////////////////////////////////////////////////////////////
-// Use routers                                                               //
+// App Routers                                                               //
 ///////////////////////////////////////////////////////////////////////////////
-router.get('/', function(request, response) {
-    response.render('index', { title: 'Router' });
-});
+app.use('/', homeRoutes);
+app.use('/user', authRoutes);
 
-///////////////////////////////////////////////////////////////////////////////
-// Use passport.authenticate() as route middleware to authenticate the       //
-// request.                                                                  //
-// The first step in GitHub authentication will involve redirecting          //
-// the user to github.com.                                                   //
-// After authorization, GitHubwill redirect the user                         //
-// back to this application at /auth/github/callback                         //
-///////////////////////////////////////////////////////////////////////////////
-
-app.get('/auth/github', AccountCtl.githubAuth);
-app.get('/auth/github/callback', AccountCtl.githubAuthCallback);
-
-app.get('/auth/google', AccountCtl.googleAuth);
-app.get('/auth/google/return', AccountCtl.googleAuthCallback);
-// Regular user sign on sign off
-app.post('/user/signin', AccountCtl.signIn);
-app.get('/user/signout', ensureAuthenticated, AccountCtl.signOut);
-
-///////////////////////////////////////////////////////////////////////////////
-// User CRUD Methods & Servi                                                 //
-///////////////////////////////////////////////////////////////////////////////
-app.route('/user')
-    .post(AccountCtl.create)
-    .get(ensureAuthenticated, AccountCtl.read);
-app.route('/user/:id')
-    .get(ensureAuthenticated, AccountCtl.readOne)
-    .put(ensureAuthenticated, AccountCtl.update)
-    .delete(ensureAuthenticated, AccountCtl.delete);
-
-app.post('/user/forgot', AccountCtl.resetToken);
-app.post('/user/reset/:token', AccountCtl.resetPassword);
-app.post('/user/changepassword', AccountCtl.changePassword);
-
-app.use('/', router);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Setup environments                                                        //
@@ -209,7 +150,8 @@ switch(process.env.NODE_ENV) {
 ///////////////////////////////////////////////////////////////////////////////
 // Init the APP
 ///////////////////////////////////////////////////////////////////////////////
-exports.app = init();
+init();
+module.exports = app;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Gracefully Shuts down the workers.                                        //
