@@ -40,22 +40,22 @@ describe('Auth', function(){
     });
 
     it('should log out', function(done){
-            request
-                .post('/user/signin')
-                .send({username: 'ariel', password: 'password'})
-                .expect(200)
-                .end(function(err, res){
-                      if (err) return done(err);
-                      expect(res.body).to.have.property('token');
-                      var token = res.body.token.token;
-                      request
-                        .get('/user/signout')
-                        .set('token', token)
-                        .expect(200)
-                        .end(function(err, res){
-                            done();
-                        });
-                });
+        request
+            .post('/user/signin')
+            .send({username: 'ariel', password: 'password'})
+            .expect(200)
+            .end(function(err, res){
+                  if (err) return done(err);
+                  expect(res.body).to.have.property('token');
+                  var token = res.body.token.token;
+                  request
+                    .get('/user/signout')
+                    .set('token', token)
+                    .expect(200)
+                    .end(function(err, res){
+                        done();
+                    });
+            });
     });
 
     after(function(done){

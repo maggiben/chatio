@@ -95,11 +95,48 @@ describe('Socket Server connection', function(){
 
         socket.on('message', function(result){
             expect(result.data).to.be.equal('Hello world');
+            socket.removeAllListeners("message");
             done();
         });
     });
 
-    it('should invite self', function(done){
+    it('should be able to join and leave a room', function(done){
+
+        var room = {
+            name: 'news',
+            isActive: true,
+            notifications: 0,
+            messages: [],
+            canInvite: false,
+            isPrivate: false,
+            owners: [],
+            users: []
+        };
+
+        var socket = io.connect(socketURL, options)
+
+        socket.emit('join', room);
+
+        socket.emit('message', {
+            user: 'ariel',
+            rooms: ['news'],
+            data: 'Hello world',
+            type: 'text'
+        });
+
+        socket.on('message', function(result){
+            expect(result.data).to.be.equal('Hello world');
+            socket.removeAllListeners("message");
+            socket.emit('leave', 'news');
+        });
+
+        socket.on('update', function(result){
+            socket.removeAllListeners("update");
+            done();
+        });
+    });
+
+    it('should not be able to invite self', function(done){
 
         var room = {
             name: 'coverage',
@@ -124,9 +161,12 @@ describe('Socket Server connection', function(){
 
         socket.on('alert', function(result){
             expect(result).to.be.equal('Cannot invite self.');
+            socket.removeAllListeners("alert");
             done();
         });
     });
+
+
     after(function(done){
         Account.findOneAndRemove({username: 'ariel'}, function(error, user){
             done();

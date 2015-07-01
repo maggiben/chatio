@@ -60,7 +60,6 @@ Runner.run(['$rootScope', '$state', '$location', 'AuthService', 'Restangular', f
 
 }]);
 Runner.factory('mySocket', function (ngSocketFactory) {
-    console.log("build facotry: ", ngSocketFactory);
     var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
     var mySocket = ngSocketFactory({
         host: ipaddr
@@ -165,32 +164,6 @@ Runner.controller( 'RegisterCtrl', function RegisterController( $scope, $state, 
             console.log(response);
             $state.transitionTo("login");
         });
-        /*
-        AuthService.authenticate(signup.username, login.password).then(function(result) {
-            $scope.$emit('userLoggedIn', angular.copy(result));
-            if($scope.user.token) {
-                // Get previous state (page that requested authentication)
-                var toState = AuthService.getState();
-                if(toState.name) {
-                    $state.transitionTo(toState.name);
-                } else {
-                    $state.transitionTo("home"); // Redirect to home
-                }
-            } else {
-                login.alerts.push({
-                    type: 'danger',
-                    msg: 'error: Could not authenticate'
-                });
-            }
-            login.processing = false;
-        }, function(error) {
-            login.alerts.push({
-                type: 'danger',
-                msg: 'error: ' + error.data.message
-            });
-            login.processing = false;
-        });
-        */
     };
     signup.closeAlert = function(index) {
         signup.alerts.splice(index, 1);
@@ -211,7 +184,7 @@ Runner.controller( 'LoginCtrl', function LoginController( $scope, $state, AuthSe
                 if(toState.name) {
                     $state.transitionTo(toState.name);
                 } else {
-                    $state.transitionTo("home"); // Redirect to home
+                    $state.transitionTo("chat"); // Redirect to home
                 }
             } else {
                 login.alerts.push({
@@ -236,10 +209,31 @@ Runner.controller( 'LoginCtrl', function LoginController( $scope, $state, AuthSe
 Runner.controller('HomeCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', function($scope, mySocket, uuid, $location, $anchorScroll) {
     console.log('HomeCtrl active');
 }]);
+Runner.factory('Room', function(){
+    function Room(options) {
+        angular.extend(this, options);
+    };
+    Room.prototype = {
+        name: null,
+        isActive: true,
+        notifications: 0,
+        messages: [],
+        canInvite: false,
+        isPrivate: false,
+        owners: [],
+        users: []
+    };
 
-Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', '$modal', function($scope, mySocket, uuid, $location, $anchorScroll, $modal) {
+    function findOrCreate(options) {
+        return new Room(options);
+    };
 
-    console.log('ChatCtrl active');
+    return {
+        findOrCreate: findOrCreate
+    }; //return the object
+});
+Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', '$modal', 'Room', function($scope, mySocket, uuid, $location, $anchorScroll, $modal, Room) {
+
     $scope.serverUsers = ['steve', 'anna'];
     $scope.serverRooms = [];
     $scope.activeRooms = [{
@@ -271,6 +265,8 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
                 type: 'text'
             });
         }
+        // Clear message
+        $scope.message = '';
     };
 
     $scope.join = function(room) {
@@ -294,6 +290,20 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         $scope.activeRoom.isActive = true;
     };
 
+    // Create private chat
+    $scope.privateChat = function(user) {
+        var room = Room.findOrCreate({
+            name: $scope.user.username + ':' + user.username,
+            allowed: [$scope.user.username, user.username],
+            isPrivate: true
+        });
+        $scope.join(room);
+        mySocket.emit('invite', {
+            room: room,
+            username: user.username
+        });
+    };
+
     $scope.leave = function(room) {
         if(room.name == 'console') {
             alert('cannot exit the console');
@@ -310,17 +320,6 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         $scope.activeRoom.isActive = true;
     }
 
-    $scope.invite = function(room, user) {
-        var username = prompt("Please enter the username to invite to this room", "");
-
-        if (username != null) {
-            mySocket.emit('invite', {
-                room: room,
-                username: username
-            });
-        }
-    }
-
     $scope.activateRoom = function(room) {
         $scope.activeRoom.isActive = false;
         $scope.activeRoom = room;
@@ -330,14 +329,15 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
 
     $scope.post = function(message, type) {
         message.id = uuid.newuuid();
-        console.log("message:: ", message);
         message.rooms.forEach(function(forRoom){
             var sendToRooms = $scope.activeRooms.filter(function(toRoom){
                 return forRoom === toRoom.name;
             });
-            console.log('sendToRoom', message);
             if(sendToRooms.length > 0) {
                 sendToRooms.forEach(function(room){
+                    if(!room.messages || room.messages.length < 0) {
+                        room.messages = [];
+                    }
                     room.messages.push(message);
                     if(!room.isActive) {
                         room.notifications += 1;
@@ -359,7 +359,6 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     });
 
     mySocket.on('notifyRoom', function(result){
-        console.log('result', result)
         $scope.post(result, 'notifycation');
     });
 
@@ -371,9 +370,22 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         $scope.updateRooms(result.rooms, result.users);
         return;
     });
+    mySocket.on('history', function(result){
+        result.history.forEach(function(history){
+            $scope.post({
+                rooms: result.rooms,
+                data: history.split(':')[1],
+                user: {
+                    username: history.split(':')[0]
+                },
+                type: 'history'
+            }, 'history');
+        });
+        return;
+    });
+
 
     $scope.updateRooms = function(rooms, users) {
-        console.log("update rooms: ", rooms, users);
         $scope.serverRooms = rooms;
         $scope.serverUsers = users;
         // Update channel users
@@ -394,33 +406,53 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         }
     });
 
-    // Join Chat
-    $scope.init();
-    $scope.$on('$destroy', function(){
-        $scope.activeRooms.forEach(function(room){
-            console.log('leaving: ', room.name);
-            mySocket.emit('leave', room.name);
-            // Remove All listeners
-            mySocket.removeAllListeners("message");
-            mySocket.removeAllListeners("alert");
-            mySocket.removeAllListeners("notifyRoom");
-            mySocket.removeAllListeners("update");
-            mySocket.removeAllListeners("updateClient");
-        });
-    });
+    // Invite user modal
+    $scope.inviteUser = function(room) {
+        var modalCtl = ['$scope', '$modalInstance', 'users', 'room', function ($scope, $modalInstance, users, room) {
 
-    function getRoomIndexByName(rooms, name) {
-        return rooms.map(function(room, index) {
-            if(room.name === name) {
-                return index;
+            $scope.users = users;
+            $scope.username = '';
+            $scope.submit = function (username) {
+                $modalInstance.close({
+                    username: username,
+                    room: room
+                });
+            };
+
+            $scope.select = function($item, $model, $label) {
+                $scope.username = $item.username;
+            };
+
+            $scope.cancel = function () {
+                $modalInstance.dismiss('cancel');
+            };
+        }];
+        var modalInstance = $modal.open({
+            templateUrl: 'invite.html',
+            controller: modalCtl,
+            windowClass: 'chat-modal',
+            resolve: {
+                users: [function(){
+                    return $scope.serverUsers;
+                }],
+                room: [function(){
+                    return room;
+                }]
             }
-        }).filter(isFinite)[0];
+        });
+        modalInstance.result.then(
+            function (options) {
+                mySocket.emit('invite', options);
+            },
+            // Exit modal no interactions
+            function () {
+                return;
+            }
+        );
     };
 
     // Add room modal
-
     $scope.addRoom = function() {
-        console.log("add room")
         var modalCtl = ['$scope', '$modalInstance', 'rooms', 'users', 'owner', function ($scope, $modalInstance, rooms, users, owner) {
 
             $scope.room = {
@@ -430,12 +462,11 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
                 messages: [],
                 canInvite: true,
                 isPrivate: true,
-                owners: [],
+                owner: [owner.username],
                 users: [],
                 allowed: [owner.username]
             };
             $scope.submit = function (room) {
-                console.log("wooble: ", room, rooms);
                 if(room.name.length) {
                     $modalInstance.close(room);
                 }
@@ -458,7 +489,6 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
                     return $scope.serverUsers;
                 }],
                 owner: [function(){
-                    console.log($scope.user)
                     return $scope.user;
                 }]
             }
@@ -474,6 +504,34 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
             }
         );
     };
+
+    // Get room index by name
+    function getRoomIndexByName(rooms, name) {
+        return rooms.map(function(room, index) {
+            if(room.name === name) {
+                return index;
+            }
+        }).filter(isFinite)[0];
+    };
+
+    // Join Chat
+    $scope.init();
+
+    // Cleanup
+    $scope.$on('$destroy', function(){
+        $scope.activeRooms.forEach(function(room){
+            mySocket.emit('leave', room.name);
+            // Remove All listeners
+            mySocket.removeAllListeners("message");
+            mySocket.removeAllListeners("alert");
+            mySocket.removeAllListeners("notifyRoom");
+            mySocket.removeAllListeners("update");
+            mySocket.removeAllListeners("updateClient");
+            mySocket.removeAllListeners("history");
+            mySocket.removeAllListeners("invite");
+        });
+    });
+
 }]);
 Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangular', 'localStorageService', function($scope, $cookies, $state, $q, Restangular, localStorageService) {
 
@@ -524,8 +582,33 @@ Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangula
 }]);
 
 ///////////////////////////////////////////////////////////////////////////////
-// Directives
+// Directives                                                                //
 ///////////////////////////////////////////////////////////////////////////////
+Runner.directive('thumbPicker', function(){
+    return function (scope, element, attrs) {
+        var popup = $('<div class="icon-popup">');
+        var list = $('<ul class="icon-list"></ul>');
+        for(var i = 1; i < 100; i++) {
+            var icon = $('<li><img src="https://pbs.twimg.com/profile_images/1743513787/Spotty_Green_Frog_Logo3_normal.gif"></li>');
+            list.append(icon);
+        }
+        list.bind("mouseup", function (event) {
+            console.log("hoooha", event);
+        });
+        popup.append(list);
+
+        element.wrap('<div></div>');
+        element.parent('div').append(popup);
+
+        element.bind("keyup", function (event) {
+            if(scope.message == 'pepe') {
+                popup.addClass('dropdown-menu').show();
+            } else {
+                popup.addClass('dropdown-menu').hide();
+            }
+        });
+    };
+});
 Runner.directive('ngEnter', function () {
     var history = [];
     var index = 0;

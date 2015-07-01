@@ -28,6 +28,7 @@ body {
     border-left: 1px solid lightgray;
     border-right: 1px solid lightgray;
     border-bottom: 1px solid lightgray;
+    overflow: hidden;
     .panel-messages {
         padding: 10px 20px;
         min-height: 250px;
@@ -35,6 +36,13 @@ body {
         border-right: 1px solid lightgray;
         overflow-y: scroll;
         overflow-wrap: break-word;
+    }
+    .users {
+        padding: 5px;
+        min-height: 250px;
+        max-height: 250px;
+        overflow-y: scroll;
+        background-color: whitesmoke;
     }
     .user-list {
         list-style: none;
@@ -55,6 +63,9 @@ body {
             background-color: #fafafa;
             color: gray;
         }
+        &.history {
+            color: gray;
+        }
         .author {
             color: gray;
             font-weight: bold;
@@ -70,4 +81,14 @@ body {
 
 .nav, .pagination, .carousel, .panel-title a {
     cursor: pointer;
+}
+
+.icon-list {
+    list-style: none;
+    padding: 0px;
+    li {
+        float: left;
+        margin: 5px;
+        border: 1px solid lightgray;
+    }
 }

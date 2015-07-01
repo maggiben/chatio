@@ -161,7 +161,7 @@ process
         'use strict';
 
         console.log('SIGTERM');
-        exports.app.close(function () {
+        app.close(function () {
             console.log("express terminated");
             mongoose.connection.close(function () {
                 console.log("mongodb terminated");
@@ -177,7 +177,7 @@ process
         'use strict';
 
         console.log('SIGINT');
-        exports.app.close(function () {
+        app.close(function () {
             mongoose.connection.close(function () {
                 process.exit(1);
             });

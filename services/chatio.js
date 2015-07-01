@@ -56,7 +56,7 @@ var rooms = [{
     name: 'staging',
     isPrivate: true,
     allowed: ['bmaggi', 'toby'],
-    users: ['wally', 'steve'],
+    users: [],
     messages: [],
     notifications: 0
 }];
@@ -104,7 +104,8 @@ exports.setup = function(server) {
                         socket.emit('message', message);
                     } else {
                         // add to history
-                        redis.lpush('chatio:channels:'+room+':history', socket.user.username+':'+message.data)
+                        db.lpush('chatio:room:'+room+':history', socket.user.username+':'+message.data);
+                        //db.hmset('chatio:room:' + room + ':history', message);
                         io.sockets.in(room).emit('message', message);
                     }
                 });
@@ -184,6 +185,13 @@ exports.setup = function(server) {
                 data: socket.user.username + ' has joined',
                 type: 'notifycation'
             });
+            db.lrange('chatio:room:' + rooms[index].name + ':history', 0, 9, function(error, history){
+                // refresh the history of the channel
+                socket.emit('history', {
+                    rooms: [roomOptions.name],
+                    history: history.reverse()
+                });
+            })
             updateClients(io);
             updateClient(socket);
 
@@ -194,17 +202,30 @@ exports.setup = function(server) {
             socket.user.rooms.splice(index, 1);
             // Announce event to room
             index = getRoomIndexByName(rooms, room);
-            socket.broadcast.in(rooms[index].name).emit("notifyRoom", {
-                rooms: [rooms[index].name],
-                data: socket.user.username + ' has left',
-                type: 'notifycation'
-            });
+            if(index < 0) {
+                return;
+            }
+            var user = rooms[index].users.indexOf(socket.user.username);
+            rooms[index].users.splice(user, 1);
+            if(rooms[index].users.length > 0) {
+                socket.broadcast.in(rooms[index].name).emit("notifyRoom", {
+                    rooms: [rooms[index].name],
+                    data: socket.user.username + ' has left',
+                    type: 'notifycation'
+                });
+                updateClients(io);
+            } else {
+                // Remove empty room
+                rooms.splice(index, 1);
+                updateClients(io);
+            }
         });
         socket.on('invite', function(options){
             if(options.username === socket.user.username) {
                 socket.emit('alert', 'Cannot invite self.');
                 return;
             }
+            console.log("invite: ", options);
             var index = getUserIndexByName(users, options.username);
             var room = getRoomIndexByName(rooms, options.room.name);
             if(room >= 0 && index >= 0){
@@ -214,7 +235,7 @@ exports.setup = function(server) {
                 }
                 // This rooms permissons will change update users
                 updateSocketById(users[index].id);
-                io.to(users[index].id).emit('invite', options.room);
+                io.to(users[index].id).emit('invite', rooms[room]);
             }
         });
     });
