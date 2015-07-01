@@ -181,6 +181,7 @@ Runner.controller( 'LoginCtrl', function LoginController( $scope, $state, AuthSe
 Runner.controller('HomeCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', function($scope, mySocket, uuid, $location, $anchorScroll) {
     console.log('HomeCtrl active');
 }]);
+
 Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', function($scope, mySocket, uuid, $location, $anchorScroll) {
 
     console.log('ChatCtrl active');
@@ -279,6 +280,7 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
 }]);
 Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', 'mySocket', 'Restangular', 'localStorageService', function($scope, $cookies, $state, mySocket, Restangular, localStorageService) {
 
+    // Store token
     var token = localStorageService.get('token');
     if ($cookies.token) {
         token = unescape($cookies.token);
@@ -303,25 +305,21 @@ Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', 'mySocket', 'Rest
         console.log('no auth token received');
     }
 
-    // SocketIO notifications
-    mySocket.on('message', function(result){
-        //console.log('WebSocket: ', result);
-        /*messanger.post({
-            message: result.greet,
-            showCloseButton: true
-        });*/
-    });
-
+    // Connect socket on user auth
     $scope.$on('userLoggedIn', function(event, user){
         $scope.user = user;
         $state.transitionTo('chat');
 
         mySocket.disconnect();
+
+        var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
         mySocket.connect({
-            host: 'http://localhost:8080'
+            host: ipaddr
         });
         mySocket.emit('userLoggedIn', {data: user.name});
     });
+
+    // Disconnect socket cleanup user enviroment
     $scope.$on('userLoggedOut', function(event, user){
         $scope.user = null;
         mySocket.emit('userLoggedOut', {data: 'myMessage'});
