@@ -60,8 +60,9 @@ Runner.run(['$rootScope', '$state', '$location', 'AuthService', 'Restangular', f
 
 }]);
 Runner.factory('mySocket', function (ngSocketFactory) {
+    var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
     var mySocket = ngSocketFactory({
-        host: 'http://localhost:8080'
+        host: ipaddr
     });
     mySocket.forward('error');
     return mySocket;
