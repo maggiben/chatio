@@ -18,10 +18,6 @@ var AccountCtl = require('./controllers/account');
 var app = express();
 var router = express.Router();
 
-// Routes
-var index = require('./routes/index');
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Mongo URL generator                                                        //
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,12 +151,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 ///////////////////////////////////////////////////////////////////////////////
 // Use routers                                                               //
 ///////////////////////////////////////////////////////////////////////////////
-//app.use('/', index);
-//app.use('/queue', queue);
-
 router.get('/', function(request, response) {
-    console.log("request made !")
-    //res.send('im the home page!');
     response.render('index', { title: 'Router' });
 });
 
@@ -205,13 +196,12 @@ app.use('/', router);
 switch(process.env.NODE_ENV) {
     case 'development':
         app.use(errorhandler({ dumpExceptions: true, showStack: true }));
-        //app.use(express.logger());
     break;
     case 'test':
         app.use(errorhandler());
     break;
     case 'production':
-        app.use(errorhandler());
+
     break;
 }
 
