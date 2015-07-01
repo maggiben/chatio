@@ -550,7 +550,7 @@ exports.githubAuthCallback = function(request, response, next) {
                     response.json({error: 'Issue generating token'});
                 } else {
                     response.cookie('token', user.token.token, { maxAge: 900000, httpOnly: false, domain: 'rhcloud.com'});
-                    response.redirect('http://app.' + conf.baseUrl + ':' + conf.port);
+                    response.redirect('http://chatio-laboratory.' + conf.baseUrl + ':' + conf.port);
                 }
             });
         } else {
