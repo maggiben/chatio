@@ -111,10 +111,53 @@ html(ng-app="Runner", lang="en")
                     i.fa.fa-fw.fa-spinner.fa-spin(ng-show='login.processing')
                     | Sign In
                 div.col-sm-6
-                  a.btn.btn-default.pull-right(href='/auth/github')
-                    i.fa.fa-fw.fa-github
-                    | Login with GitHub
-              //a(ui-sref='main.user.forgot') Forgot ?
+                  a.btn.btn-default.pull-right(ui-sref='register')
+                    i.fa.fa-fw.fa-user
+                    | Sign up
+          div.panel-footer Version 1
+
+  // Sign up
+  script(type="text/ng-template" id="register.html")
+    div.row
+      div.col-lg-12
+        div.page-header
+          h4
+            i.fa.fa-fw.fa-home
+            |&nbsp;Sign up
+    div.row.signup-form
+      div.col-md-12
+        alert(ng-repeat='alert in signup.alerts', type='{{signup.alert.type}}', close='signup.closeAlert($index)') {{alert.msg}}
+      div.col-md-12
+        div.panel.panel-default
+          div.panel-body
+            form.form-horizontal(name='signupForm', role='form', ng-submit='signup.submit()')
+              div.form-group
+                div.col-sm-12
+                  div.input-group
+                    span.input-group-addon
+                      i.fa.fa-user
+                    input.form-control(type='text', ng-model='signup.username', placeholder='Username', required='', autofocus='')
+              div.form-group
+                div.col-sm-12
+                  div.input-group
+                    span.input-group-addon
+                      i.fa.fa-envelope
+                    input.form-control(type='email', ng-model='signup.email', placeholder='Email', required='', autofocus='')
+              div.form-group
+                div.col-sm-12
+                  div.input-group
+                    span.input-group-addon
+                      i.fa.fa-unlock
+                    input.form-control(type='password', ng-model='signup.password', required='', placeholder='Password')
+              div.form-group
+                div.col-sm-6
+                  button.btn.btn-primary(type='submit', ng-disabled='signup.processing || !signupForm.$valid')
+                    i.fa.fa-fw.fa-spinner.fa-spin(ng-show='signup.processing')
+                    | Sign up
+                div.col-sm-6
+                  a.btn.btn-default.pull-right(ui-sref='login')
+                    i.fa.fa-fw.fa-user
+                    | Login
           div.panel-footer Version 1
 
   // Home
@@ -147,6 +190,7 @@ html(ng-app="Runner", lang="en")
             span.badge {{serverRooms.length}}
           li.list-group-item(ng-repeat="room in serverRooms")
             a(href="", ng-click="join(room)")
+              i.fa.fa-fw(ng-class="room.isPrivate ? 'fa-lock':'fa-unlock'")
               |{{room.name}}
         ul.list-group
           li.list-group-item.active List of users
@@ -162,19 +206,33 @@ html(ng-app="Runner", lang="en")
                   | {{room.name}}
                   a.leave(ng-click="leave(room)", ng-if="room.isActive && room.name != 'console'")
                     i.fa.fa-fw.fa-times
-                div.panel-messages
-                  ul.messages(id="messages")
-                    li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type")
-                      span.author(ng-if="message.user.username") {{message.user.username}}:&nbsp;
-                      span.content {{message.data}}
-              tab(select="addRom()")
-                tab-heading
-                  i.fa.fa-fw.fa-plus
-                  | Add
+                div.panel-chat-room
+                  div.row
+                    div.col-sm-10.panel-messages
+                      ul.messages(id="messages")
+                        li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type")
+                          div(ng-if="message.type == 'text'")
+                            span.author(ng-if="message.user.username") {{message.user.username}}:&nbsp;
+                            span.content {{message.data}}
+                          div(ng-if="message.type == 'image'")
+                            span.author(ng-if="message.user.username") {{message.user.username}}:
+                            img.image(ng-src='{{message.data}}')
+                    div.col-sm-2
+                      ul.user-list
+                        li(ng-repeat="user in room.users")
+                          i.fa.fa-fw.fa-user
+                          | {{user}}
+                        li(ng-if="room.canInvite")
+                          a(href="", ng-click="invite(room)")
+                            i.fa.fa-fw.fa-plus
+                            |Invite
+              button.btn.btn-sm.btn-default.pull-right(type="button", ng-click="addRoom()")
+                i.fa.fa-fw.fa-plus
+                | Add Room
         div.row
-          div.col-md-12
+          div.col-md-10
             div.input-group
-              input.form-control(type='text', ng-model="message")
+              input.form-control(type='text', ng-model="message", ng-enter="send()")
               div.input-group-btn
                 button.btn.btn-default(type='button', ng-click="send()") Send
                 button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
@@ -191,4 +249,24 @@ html(ng-app="Runner", lang="en")
                   li
                     a(href='#') Separated link
 
-    div.row
+  // Modals
+  script(type="text/ng-template" id="createRomm.html")
+    form.form-horizontal(name='roomForm', role='form', ng-model="room", ng-submit='submit(room)')
+      div.modal-header
+        button(type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()")
+        h4.modal-title Add chat room
+      div.modal-body
+        div.form-group
+          div.col-sm-12
+            div.input-group
+              span.input-group-addon
+                i.fa.fa-edit
+              input.form-control(type='text', ng-model='room.name', placeholder='Name', ng-required="true", required='', autofocus='')
+        div.checkbox
+          label
+            input(type='checkbox', ng-model='room.isPrivate')
+            |Is private ?
+      div.modal-footer
+        button(type="button", ng-click="cancel()").btn.btn-danger Or cancel
+        button(type="submit", ng-disabled='!roomForm.$valid').btn.btn-success.pull-right Add
+

@@ -528,6 +528,7 @@ passport.use(new GitHubStrategy({
 
 exports.githubAuth = function(request, response, next) {
     'use strict';
+
     passport.authenticate('github', function(request, response, next) {
         // The request will be redirected to GitHub for authentication, so this
         // function will not be called.

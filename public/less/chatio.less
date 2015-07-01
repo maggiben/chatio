@@ -24,13 +24,23 @@ body {
     }
 }
 
-.panel-messages {
-    min-height: 250px;
-    max-height: 250px;
-    overflow-y: scroll;
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+.panel-chat-room {
+    border-left: 1px solid lightgray;
+    border-right: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    .panel-messages {
+        padding: 10px 20px;
+        min-height: 250px;
+        max-height: 250px;
+        border-right: 1px solid lightgray;
+        overflow-y: scroll;
+        overflow-wrap: break-word;
+    }
+    .user-list {
+        list-style: none;
+        padding: 0px;
+        margin: 0px;
+    }
 }
 
 .messages {
@@ -39,7 +49,7 @@ body {
     margin: 0;
     .message {
         padding: 2px;
-        margin: 0px 5px;
+        margin: 1px 5px;
         &.notifycation {
             border: 1px solid #efefef;
             background-color: #fafafa;
@@ -48,6 +58,12 @@ body {
         .author {
             color: gray;
             font-weight: bold;
+        }
+        .image {
+            display: block;
+            background-color: whitesmoke;
+            padding: 10px;
+            border: 1px solid lightgray;
         }
     }
 }

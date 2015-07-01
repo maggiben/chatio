@@ -141,8 +141,61 @@ Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', 'l
             },
             data: { pageTitle: 'Login' },
             authenticate: false
+        })
+        .state('register', {
+            url: '/register',
+            views: {
+                'main': {
+                    templateUrl: 'register.html',
+                    controller: 'RegisterCtrl as signup'
+                }
+            },
+            data: { pageTitle: 'Sign up' },
+            authenticate: false
         });
 }]);
+Runner.controller( 'RegisterCtrl', function RegisterController( $scope, $state, AuthService, Restangular ) {
+
+    var signup = this;
+    signup.alerts = [];
+
+    signup.submit = function () {
+        signup.processing = true;
+        Restangular.oneUrl('user', '/user').customPOST({username: signup.username, email: signup.email, password: signup.username}).then(function(response){
+            console.log(response);
+            $state.transitionTo("login");
+        });
+        /*
+        AuthService.authenticate(signup.username, login.password).then(function(result) {
+            $scope.$emit('userLoggedIn', angular.copy(result));
+            if($scope.user.token) {
+                // Get previous state (page that requested authentication)
+                var toState = AuthService.getState();
+                if(toState.name) {
+                    $state.transitionTo(toState.name);
+                } else {
+                    $state.transitionTo("home"); // Redirect to home
+                }
+            } else {
+                login.alerts.push({
+                    type: 'danger',
+                    msg: 'error: Could not authenticate'
+                });
+            }
+            login.processing = false;
+        }, function(error) {
+            login.alerts.push({
+                type: 'danger',
+                msg: 'error: ' + error.data.message
+            });
+            login.processing = false;
+        });
+        */
+    };
+    signup.closeAlert = function(index) {
+        signup.alerts.splice(index, 1);
+    };
+});
 Runner.controller( 'LoginCtrl', function LoginController( $scope, $state, AuthService, Restangular ) {
 
     var login = this;
@@ -184,7 +237,7 @@ Runner.controller('HomeCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     console.log('HomeCtrl active');
 }]);
 
-Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', function($scope, mySocket, uuid, $location, $anchorScroll) {
+Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anchorScroll', '$modal', function($scope, mySocket, uuid, $location, $anchorScroll, $modal) {
 
     console.log('ChatCtrl active');
     $scope.serverUsers = ['steve', 'anna'];
@@ -193,12 +246,16 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         name: 'console',
         isActive: true,
         notifications: 0,
-        messages: []
+        messages: [],
+        canInvite: false,
+        isPrivate: false,
+        owners: [],
+        users: []
     }];
 
     $scope.activeRoom = $scope.activeRooms[0];
 
-    $scope.message = "hellox";
+    $scope.message = "/giphy dogs";
     $scope.messages = [];
 
     // Methods
@@ -206,18 +263,20 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         mySocket.emit('join', $scope.activeRoom);
     };
     $scope.send = function() {
-        mySocket.emit('message', {
-            user: $scope.user,
-            rooms: [$scope.activeRoom.name],
-            data: $scope.message,
-            type: 'text'
-        });
+        if($scope.message.length > 0) {
+            mySocket.emit('message', {
+                user: $scope.user,
+                rooms: [$scope.activeRoom.name],
+                data: $scope.message,
+                type: 'text'
+            });
+        }
     };
 
     $scope.join = function(room) {
         var index = getRoomIndexByName($scope.activeRooms, room.name);
         // Is it private ?
-        if(room.isPrivate && room.users.indexOf($scope.user.username) < 0) {
+        if(room.isPrivate && room.allowed.indexOf($scope.user.username) < 0) {
             alert('This room is private.');
             return;
         }
@@ -225,7 +284,6 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
             mySocket.emit('join', room);
             $scope.activeRooms.push(room);
         } else {
-
             $scope.activeRoom.isActive = false;
             $scope.activeRoom = $scope.activeRooms[index];;
             $scope.activeRoom.isActive = true;
@@ -250,6 +308,17 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         $scope.activeRoom.isActive = false;
         $scope.activeRoom = $scope.activeRooms[0];
         $scope.activeRoom.isActive = true;
+    }
+
+    $scope.invite = function(room, user) {
+        var username = prompt("Please enter the username to invite to this room", "");
+
+        if (username != null) {
+            mySocket.emit('invite', {
+                room: room,
+                username: username
+            });
+        }
     }
 
     $scope.activateRoom = function(room) {
@@ -295,13 +364,34 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     });
 
     mySocket.on('update', function(result){
-        $scope.serverRooms = result.rooms;
-        $scope.serverUsers = result.users;
+        $scope.updateRooms(result.rooms, result.users);
+        return;
     });
     mySocket.on('updateClient', function(result){
-        console.log('updateClient', result);
-        $scope.serverRooms = result.rooms;
-        $scope.serverUsers = result.users;
+        $scope.updateRooms(result.rooms, result.users);
+        return;
+    });
+
+    $scope.updateRooms = function(rooms, users) {
+        console.log("update rooms: ", rooms, users);
+        $scope.serverRooms = rooms;
+        $scope.serverUsers = users;
+        // Update channel users
+        $scope.activeRooms.forEach(function(room) {
+            var index = getRoomIndexByName(rooms, room.name);
+            if(index >= 0) {
+                room.users = rooms[index].users;
+                room.allowed = rooms[index].allowed;
+            }
+        });
+    };
+
+    mySocket.on('invite', function(room){
+        if(confirm('You been invited to join: ' + room.name)) {
+            $scope.join(room);
+        } else {
+
+        }
     });
 
     // Join Chat
@@ -321,13 +411,69 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
 
     function getRoomIndexByName(rooms, name) {
         return rooms.map(function(room, index) {
-            console.log("find: ", name, " room: ", room.name)
             if(room.name === name) {
                 return index;
             }
         }).filter(isFinite)[0];
     };
 
+    // Add room modal
+
+    $scope.addRoom = function() {
+        console.log("add room")
+        var modalCtl = ['$scope', '$modalInstance', 'rooms', 'users', 'owner', function ($scope, $modalInstance, rooms, users, owner) {
+
+            $scope.room = {
+                name: 'sword',
+                isActive: true,
+                notifications: 0,
+                messages: [],
+                canInvite: true,
+                isPrivate: true,
+                owners: [],
+                users: [],
+                allowed: [owner.username]
+            };
+            $scope.submit = function (room) {
+                console.log("wooble: ", room, rooms);
+                if(room.name.length) {
+                    $modalInstance.close(room);
+                }
+            };
+
+            $scope.cancel = function () {
+                $modalInstance.dismiss('cancel');
+            };
+        }];
+        var modalInstance = $modal.open({
+            templateUrl: 'createRomm.html',
+            controller: modalCtl,
+            windowClass: 'chat-modal',
+            resolve: {
+                rooms: ['$http', function($http) {
+                    //return $http.get("/api/vendors");
+                    return $scope.serverRooms;
+                }],
+                users: [function(){
+                    return $scope.serverUsers;
+                }],
+                owner: [function(){
+                    console.log($scope.user)
+                    return $scope.user;
+                }]
+            }
+        });
+        modalInstance.result.then(
+            function (room) {
+                // Create + join
+                $scope.join(room);
+            },
+            // Exit modal no interactions
+            function () {
+                return;
+            }
+        );
+    };
 }]);
 Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangular', 'localStorageService', function($scope, $cookies, $state, $q, Restangular, localStorageService) {
 
@@ -376,3 +522,34 @@ Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangula
         //mySocket.disconnect();
     });
 }]);
+
+///////////////////////////////////////////////////////////////////////////////
+// Directives
+///////////////////////////////////////////////////////////////////////////////
+Runner.directive('ngEnter', function () {
+    var history = [];
+    var index = 0;
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+                history.push(scope.message);
+                scope.message = '';
+                index = history.length;
+                event.preventDefault();
+            }
+            if(event.which === 38) {
+                index -= 1;
+                scope.message = history[index];
+                scope.$apply();
+            }
+            if(event.which === 40) {
+                index += 1;
+                scope.message = history[index];
+                scope.$apply();
+            }
+        });
+    };
+});

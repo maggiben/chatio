@@ -40,18 +40,22 @@ var config = require('../config'),
     socketio  = require('socket.io'),
     redis = require('redis').createClient
     adapter = require('socket.io-redis'),
-    Account = require('../models/account');
+    Account = require('../models/account'),
+    giphy = require('giphy-wrapper')('dc6zaTOxFJmzC');
 
 var users = [];
 var rooms = [{
     name: 'support',
     isPrivate: false,
     messages: [],
-    notifications: 0
+    notifications: 0,
+    canInvite: true,
+    users: []
 }, {
     name: 'staging',
     isPrivate: true,
-    users: ['bmaggix', 'antonio'],
+    allowed: ['bmaggi', 'toby'],
+    users: ['wally', 'steve'],
     messages: [],
     notifications: 0
 }];
@@ -80,20 +84,42 @@ exports.setup = function(server) {
 
         users.push({
             username: socket.user.username,
-            id: socket.id
+            id: socket.id,
+            //socket: socket
         });
 
-        socket.on('message', function (data) {
-            console.log('message: ', socket.user.username, data);
-            data.rooms.forEach(function(room){
-                console.log("room: ", room);
-                io.sockets.in(room).emit('message', data);
+        socket.on('message', function (message) {
+            console.log("DATA: ", message)
+            // lookup commands
+            if(!commands(message, socket)) {
+                message.rooms.forEach(function(room){
+                    // Console is private !
+                    if(room === 'console') {
+                        socket.emit('message', message);
+                    } else {
+                        io.sockets.in(room).emit('message', message);
+                    }
+                });
+            }
+
+            return;
+            message.rooms.forEach(function(room){
+                // Console is private !
+                if(room === 'console') {
+                    socket.emit('message', message);
+                } else {
+                    io.sockets.in(room).emit('message', message);
+                }
             });
         });
         socket.on('disconnect', function () {
             console.log("disconnect: ", socket.id);
             users = users.filter(function(user){
                 return user.id != socket.id;
+            });
+            rooms.forEach(function(room){
+                var index = room.users.indexOf(socket.user.username);
+                room.users.splice(index, 1);
             });
             /*socket.broadcast.in(roomOptions.name).emit("notifyRoom", {
                 text: socket.id + 'has left',
@@ -118,6 +144,7 @@ exports.setup = function(server) {
             });
             if(!exists) {
                 rooms.push(roomOptions);
+                console.log("new room: ", rooms[rooms.length - 1]);
             }
 
             // Has joined already
@@ -130,18 +157,26 @@ exports.setup = function(server) {
             }
             var index = getRoomIndexByName(rooms, roomOptions.name);
             // Is private
-            if(rooms[index].isPrivate && rooms[index].users.indexOf(socket.user.username) < 0) {
+            if(rooms[index].isPrivate && rooms[index].allowed.indexOf(socket.user.username) < 0) {
                 socket.emit('alert', 'This room is private.');
                 return;
             }
+            // Push room to socket rooms
             socket.user.rooms.push(rooms[index]);
+            if(!rooms[index].users) {
+                rooms[index].users = [];
+            }
+            // Update room users list
+            rooms[index].users.push(socket.user.username);
             socket.join(rooms[index].name);
             socket.broadcast.in(rooms[index].name).emit("notifyRoom", {
                 rooms: [rooms[index].name],
                 data: socket.user.username + ' has joined',
                 type: 'notifycation'
             });
+            updateClients(io);
             updateClient(socket);
+
         });
         socket.on('leave', function(room){
             socket.leave(room);
@@ -155,6 +190,21 @@ exports.setup = function(server) {
                 type: 'notifycation'
             });
             console.log('left: ', room);
+        });
+        socket.on('invite', function(options){
+            var index = getUserIndexByName(users, options.username);
+            var room = getRoomIndexByName(rooms, options.room.name);
+            if(room >= 0 && index >= 0){
+                // Update allowed list
+                console.log("rooms: ", rooms[room])
+                if(rooms[room].allowed.indexOf(options.username) < 0){
+                    rooms[room].allowed.push(options.username);
+                }
+                // This rooms permissons will change update users
+                updateSocketById(users[index].id);
+                io.to(users[index].id).emit('invite', options.room);
+            }
+            console.log("room: ", options.room, options, room, rooms[room])
         });
     });
     ///////////////////////////////////////////////////////////////////////////
@@ -195,7 +245,17 @@ exports.setup = function(server) {
 
     function getRoomIndexByName(rooms, name) {
         return rooms.map(function(room, index) {
+            //console.log("find: ", name, " in: ", room.name)
             if(room.name === name) {
+                console.log("index: ", index);
+                return index;
+            }
+        }).filter(isFinite)[0];
+    };
+
+    function getUserIndexByName(users, username) {
+        return users.map(function(user, index) {
+            if(user.username === username) {
                 return index;
             }
         }).filter(isFinite)[0];
@@ -215,6 +275,57 @@ exports.setup = function(server) {
             rooms: rooms,
             users: users
         });
+    }
+    function updateSocketById(id) {
+        io.to(id).emit('updateClient', {
+            rooms: rooms,
+            users: users
+        });
+    }
+
+    function commands(message, socket) {
+
+        console.log("commands: ")
+        // find commands
+        var expr = new RegExp(/(^|\s)^\/(\w+)/g);
+        var command = message.data.match(expr);
+        if(!command) {
+            return false;
+        }
+        switch(command[0]) {
+            case '/pepe':
+                console.log("CALLED PEPE")
+                //http://s3.amazonaws.com/rapgenius/Daffy-Duck-Angry-icon.png
+                message.data = 'http://s3.amazonaws.com/rapgenius/Daffy-Duck-Angry-icon.png';
+                message.type = 'image';
+                socket.emit('message', message);
+                return true;
+            break;
+            case '/giphy':
+                var search = message.data.replace('/giphy','').trim();
+                if(search.length < 1) {
+                    console.log("no search term");
+                    return false;
+                }
+                giphy.search(message.data.replace('/giphy','').trim(), 1, 0, function (error, results) {
+                    if (error) {
+                        // check error
+                        return false;
+                    }
+                    console.log(results)
+                    if(results.data.length > 0) {
+                        message.data = results.data[0].images.fixed_width_small.url;
+                        message.type = 'image';
+                        socket.emit('message', message);
+                    }
+                });
+                return true;
+            break;
+            default:
+                return false;
+            break
+        }
+
     }
 
     return io;
