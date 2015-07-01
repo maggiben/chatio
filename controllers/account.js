@@ -549,8 +549,8 @@ exports.githubAuthCallback = function(request, response, next) {
                     response.statusCode = 500;
                     response.json({error: 'Issue generating token'});
                 } else {
-                    response.cookie('token', user.token.token, { maxAge: 900000, httpOnly: false, domain: 'apicat.us'});
-                    response.redirect('http://app.' + conf.baseUrl + ':' + conf.listenPort);
+                    response.cookie('token', user.token.token, { maxAge: 900000, httpOnly: false, domain: 'rhcloud.com'});
+                    response.redirect('http://app.' + conf.baseUrl + ':' + conf.port);
                 }
             });
         } else {

@@ -11,14 +11,15 @@ var environments = {
         sessionSecret: process.env.SECRET,
         oAuthServices: {
             github: {
-                clientId: '1b147fb22f603248b539',
-                clientSecret: 'a326b2f318defb7910639ea0a10c735246a24672'
+                clientId: 'f60c4cc4772fb491fab6',
+                clientSecret: '0ee700ecd2f54e9295fd3740c971574db2ed2520'
             },
             sendgrid: {
                 api_user: process.env.SENDGRID_USER || 'chatio',
                 api_key: process.env.SENDGRID_KEY || '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',
             }
         },
+        baseUrl: 'rhcloud.com',
         environment: process.env.NODE_ENV,
         port: process.env.OPENSHIFT_NODEJS_PORT || 8080,
         ipaddr: process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',

@@ -45,13 +45,13 @@ var config = require('../config'),
 var users = [];
 var rooms = [{
     name: 'support',
-    private: false,
+    isPrivate: false,
     messages: [],
     notifications: 0
 }, {
     name: 'staging',
-    private: true,
-    users: ['bameggi', 'antonio'],
+    isPrivate: true,
+    users: ['bmaggix', 'antonio'],
     messages: [],
     notifications: 0
 }];
@@ -79,7 +79,7 @@ exports.setup = function(server) {
         updateClient(socket);
 
         users.push({
-            name: '',
+            username: socket.user.username,
             id: socket.id
         });
 
@@ -110,32 +110,51 @@ exports.setup = function(server) {
 
         socket.on('join', function(roomOptions) {
 
-            console.log('User Joins', JSON.stringify(roomOptions, null, 4));
+            //console.log('User Joins', JSON.stringify(socket.user.rooms, null, 4));
+
+            // Create if non existant
             var exists = rooms.some(function(room, index){
                 return room.name === roomOptions.name;
             });
             if(!exists) {
                 rooms.push(roomOptions);
             }
-            var hasJoined = socket.user.rooms.some(function(room, index){
+
+            // Has joined already
+            var hasJoined = socket.user.rooms.some(function(room){
                 return room.name === roomOptions.name;
             });
             if(hasJoined) {
                 socket.emit('alert', 'You have already joined this room.');
                 return;
-            } else {
-                socket.user.rooms.push(roomOptions);
             }
-            console.log(hasJoined)
-            socket.join(roomOptions.name);
-            socket.broadcast.in(roomOptions.name).emit("notifyRoom", {
-                rooms: [roomOptions.name],
+            var index = getRoomIndexByName(rooms, roomOptions.name);
+            // Is private
+            if(rooms[index].isPrivate && rooms[index].users.indexOf(socket.user.username) < 0) {
+                socket.emit('alert', 'This room is private.');
+                return;
+            }
+            socket.user.rooms.push(rooms[index]);
+            socket.join(rooms[index].name);
+            socket.broadcast.in(rooms[index].name).emit("notifyRoom", {
+                rooms: [rooms[index].name],
                 data: socket.user.username + ' has joined',
                 type: 'notifycation'
             });
+            updateClient(socket);
         });
         socket.on('leave', function(room){
             socket.leave(room);
+            var index = getRoomIndexByName(socket.user.rooms, room);
+            socket.user.rooms.splice(index, 1);
+            // Announce event to room
+            index = getRoomIndexByName(rooms, room);
+            socket.broadcast.in(rooms[index].name).emit("notifyRoom", {
+                rooms: [rooms[index].name],
+                data: socket.user.username + ' has left',
+                type: 'notifycation'
+            });
+            console.log('left: ', room);
         });
     });
     ///////////////////////////////////////////////////////////////////////////
@@ -174,16 +193,27 @@ exports.setup = function(server) {
         //next();
     });
 
+    function getRoomIndexByName(rooms, name) {
+        return rooms.map(function(room, index) {
+            if(room.name === name) {
+                return index;
+            }
+        }).filter(isFinite)[0];
+    };
+
+    // Updates all clients
     function updateClients(io) {
         io.emit('update', {
             rooms: rooms,
             users: users
         });
     }
-
+    // Update a single client
     function updateClient(socket) {
         socket.emit('updateClient', {
-            id: socket.id
+            id: socket.id,
+            rooms: rooms,
+            users: users
         });
     }
 

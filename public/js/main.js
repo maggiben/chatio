@@ -60,6 +60,7 @@ Runner.run(['$rootScope', '$state', '$location', 'AuthService', 'Restangular', f
 
 }]);
 Runner.factory('mySocket', function (ngSocketFactory) {
+    console.log("build facotry: ", ngSocketFactory);
     var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
     var mySocket = ngSocketFactory({
         host: ipaddr
@@ -189,14 +190,10 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     $scope.serverUsers = ['steve', 'anna'];
     $scope.serverRooms = [];
     $scope.activeRooms = [{
-        name: 'pepe',
+        name: 'console',
         isActive: true,
         notifications: 0,
-        messages: [{
-            data: 'hello world'
-        }, {
-            data: 'bye'
-        }]
+        messages: []
     }];
 
     $scope.activeRoom = $scope.activeRooms[0];
@@ -218,13 +215,42 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     };
 
     $scope.join = function(room) {
-        console.log("join", room)
-        mySocket.emit('join', room);
-        $scope.activeRooms.push(room);
+        var index = getRoomIndexByName($scope.activeRooms, room.name);
+        // Is it private ?
+        if(room.isPrivate && room.users.indexOf($scope.user.username) < 0) {
+            alert('This room is private.');
+            return;
+        }
+        if(index == undefined || index < 0) {
+            mySocket.emit('join', room);
+            $scope.activeRooms.push(room);
+        } else {
+
+            $scope.activeRoom.isActive = false;
+            $scope.activeRoom = $scope.activeRooms[index];;
+            $scope.activeRoom.isActive = true;
+            return;
+        }
         $scope.activeRoom.isActive = false;
         $scope.activeRoom = room;
         $scope.activeRoom.isActive = true;
     };
+
+    $scope.leave = function(room) {
+        if(room.name == 'console') {
+            alert('cannot exit the console');
+            return;
+        }
+        var index = getRoomIndexByName($scope.activeRooms, room.name);
+
+        mySocket.emit('leave', room.name);
+        $scope.activeRooms.splice(index, 1);
+
+        // Default room (console)
+        $scope.activeRoom.isActive = false;
+        $scope.activeRoom = $scope.activeRooms[0];
+        $scope.activeRoom.isActive = true;
+    }
 
     $scope.activateRoom = function(room) {
         $scope.activeRoom.isActive = false;
@@ -274,12 +300,36 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     });
     mySocket.on('updateClient', function(result){
         console.log('updateClient', result);
+        $scope.serverRooms = result.rooms;
+        $scope.serverUsers = result.users;
     });
 
     // Join Chat
     $scope.init();
+    $scope.$on('$destroy', function(){
+        $scope.activeRooms.forEach(function(room){
+            console.log('leaving: ', room.name);
+            mySocket.emit('leave', room.name);
+            // Remove All listeners
+            mySocket.removeAllListeners("message");
+            mySocket.removeAllListeners("alert");
+            mySocket.removeAllListeners("notifyRoom");
+            mySocket.removeAllListeners("update");
+            mySocket.removeAllListeners("updateClient");
+        });
+    });
+
+    function getRoomIndexByName(rooms, name) {
+        return rooms.map(function(room, index) {
+            console.log("find: ", name, " room: ", room.name)
+            if(room.name === name) {
+                return index;
+            }
+        }).filter(isFinite)[0];
+    };
+
 }]);
-Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', 'mySocket', 'Restangular', 'localStorageService', function($scope, $cookies, $state, mySocket, Restangular, localStorageService) {
+Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangular', 'localStorageService', function($scope, $cookies, $state, $q, Restangular, localStorageService) {
 
     // Store token
     var token = localStorageService.get('token');
@@ -311,19 +361,18 @@ Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', 'mySocket', 'Rest
         $scope.user = user;
         $state.transitionTo('chat');
 
-        mySocket.disconnect();
-
-        var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
+        /*var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
         mySocket.connect({
             host: ipaddr
         });
         mySocket.emit('userLoggedIn', {data: user.name});
+        */
     });
 
     // Disconnect socket cleanup user enviroment
     $scope.$on('userLoggedOut', function(event, user){
         $scope.user = null;
-        mySocket.emit('userLoggedOut', {data: 'myMessage'});
-        mySocket.disconnect();
+        //mySocket.emit('userLoggedOut', {data: 'myMessage'});
+        //mySocket.disconnect();
     });
 }]);

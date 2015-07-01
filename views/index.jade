@@ -144,14 +144,14 @@ html(ng-app="Runner", lang="en")
       div.col-md-3
         ul.list-group
           li.list-group-item.active Available rooms
-            span.badge {{rooms.length}}
+            span.badge {{serverRooms.length}}
           li.list-group-item(ng-repeat="room in serverRooms")
             a(href="", ng-click="join(room)")
               |{{room.name}}
         ul.list-group
           li.list-group-item.active List of users
-            span.badge {{users.length}}
-          li.list-group-item(ng-repeat="user in users") {{user.name}}
+            span.badge {{serverUsers.length}}
+          li.list-group-item(ng-repeat="user in serverUsers") {{user.username}}
       div.col-md-9
         div.row
           div.col-md-12
@@ -160,10 +160,13 @@ html(ng-app="Runner", lang="en")
                 tab-heading
                   span(ng-if="room.notifications > 0").label.label-notifications.label-sm {{room.notifications}}
                   | {{room.name}}
-                  i.fa.fa-fw.fa-times(ng-click="leave(room)")
+                  a.leave(ng-click="leave(room)", ng-if="room.isActive && room.name != 'console'")
+                    i.fa.fa-fw.fa-times
                 div.panel-messages
                   ul.messages(id="messages")
-                    li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type") {{message.user.username}}: {{message.data}}
+                    li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type")
+                      span.author(ng-if="message.user.username") {{message.user.username}}:&nbsp;
+                      span.content {{message.data}}
               tab(select="addRom()")
                 tab-heading
                   i.fa.fa-fw.fa-plus

@@ -46,7 +46,7 @@ angular.module('ngSocket', [
     var defaultPrefix = 'socket:';
     var ioSocket;
     var defaultOptions = {
-        reconnection: true,
+        reconnection: false,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 500,
         timeout: 20000

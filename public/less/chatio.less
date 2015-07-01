@@ -12,6 +12,16 @@ body {
         background-color: #d9534f;
         margin-right: 5px;
     }
+    .leave {
+        cursor: pointer;
+        color: gray;
+        &:hover {
+            color: red;
+        }
+        &:active {
+            color: darkred;
+        }
+    }
 }
 
 .panel-messages {
@@ -34,6 +44,10 @@ body {
             border: 1px solid #efefef;
             background-color: #fafafa;
             color: gray;
+        }
+        .author {
+            color: gray;
+            font-weight: bold;
         }
     }
 }
