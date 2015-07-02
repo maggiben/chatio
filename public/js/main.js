@@ -238,7 +238,7 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
 
     $scope.activeRoom = $scope.activeRooms[0];
 
-    $scope.message = "/giphy dogs";
+    $scope.message = '';
     $scope.messages = [];
 
     // Methods
