@@ -7,39 +7,75 @@ var gulp   = require('gulp'),
     nodemon = require('gulp-nodemon'),
     notify = require('gulp-notify'),
     livereload = require('gulp-livereload'),
-    mocha = require('gulp-mocha');
+    mocha = require('gulp-mocha'),
+    coveralls = require('gulp-coveralls'),
+    istanbul = require('gulp-istanbul'),
+    plumber = require('gulp-plumber');
 
 // define the default task and add the watch task to it
 gulp.task('default', ['watch']);
 
-// configure the jshint task
+///////////////////////////////////////////////////////////////////////////////
+// configure the jshint task                                                 //
+///////////////////////////////////////////////////////////////////////////////
 gulp.task('lint', function() {
   return gulp.src(['./app.js'])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('jshint-stylish'));
 });
 
-// Mocha Task
-gulp.task('mocha', function() {
-    return gulp.src(['test/**/*.js'])
-        .pipe(mocha({ reporter: 'nyan', timeout: 5000 }))
-        .once('error', function () {
-            process.exit(1);
-        })
-        .once('end', function () {
-            process.exit();
-        });
+///////////////////////////////////////////////////////////////////////////////
+// Mocha task                                                                //
+///////////////////////////////////////////////////////////////////////////////
+
+gulp.task('mocha', function(cb){
+    // Track src files that should be covered
+    return gulp.src(['./app.js', './services/chatio.js'])
+        .pipe(istanbul({ includeUntested: true })) // Covering files
+        .pipe(istanbul.hookRequire()) // Force `require` to return covered files
+        .on('finish', function() {
+            // Specify server specs
+            gulp.src(['test/**/*.js'], {read: false})
+            .pipe(plumber())
+            .pipe(mocha({
+                reporter: 'spec',
+                timeout: 20000
+            }))
+            // Write reports to Istanbul
+            .pipe(istanbul.writeReports())
+            .once('end', function () {
+                process.exit();
+            })
+            .once('error', function () {
+                process.exit(1);
+            })
+    });
 });
 
-// configure which files to watch and what tasks to use on file changes
+///////////////////////////////////////////////////////////////////////////////
+// configure which files to watch and what tasks to use on file changes      //
+///////////////////////////////////////////////////////////////////////////////
 gulp.task('watch', function() {
     gulp.watch(['app.js'], ['lint']);
 });
 
-// Default Task
+///////////////////////////////////////////////////////////////////////////////
+// Coverage report                                                           //
+///////////////////////////////////////////////////////////////////////////////
+gulp.task('coveralls', function () {
+    if (!process.env.CI) return;
+        return gulp.src('./coverage/lcov.info')
+        .pipe(coveralls());
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Default Task                                                              //
+///////////////////////////////////////////////////////////////////////////////
 gulp.task('default', ['lint', 'watch']);
 
-// Develop Task
+///////////////////////////////////////////////////////////////////////////////
+// Develop Task                                                              //
+///////////////////////////////////////////////////////////////////////////////
 gulp.task('develop', function() {
     // listen for changes
     livereload.listen();

@@ -52,6 +52,9 @@
     "chai": "~3",
     "socket.io-client": "~1.3",
     "supertest": "~1",
-    "gulp-mocha": "~2"
+    "gulp-mocha": "~2",
+    "gulp-coveralls": "~0.1",
+    "gulp-istanbul": "~0.10",
+    "gulp-plumber": "~1"
   }
 }
