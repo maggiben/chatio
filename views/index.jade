@@ -14,14 +14,16 @@ html(ng-app="Runner", lang="en")
     link(rel='apple-touch-icon-precomposed', sizes='72x72', href='images/apple-touch-icon-72-precomposed.png')
 
     // Bootstrap
-    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
+    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css")
     // FontAwesome
     link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
     // Main Css File
     link(rel="stylesheet/less", type="text/css", href="less/chatio.less")
+    // Font
+    link(rel="stylesheet/less", type="text/css", href="//fonts.googleapis.com/css?family=Open+Sans")
 
   body(ng-controller="MainCtrl as main")
-    nav(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+    nav(role="navigation", style="display:none").navbar.navbar-inverse.navbar-fixed-top
       div.container-fluid
         div.navbar-header
           a(ui-sref="home").navbar-brand
@@ -44,7 +46,10 @@ html(ng-app="Runner", lang="en")
                   a(href='#')
                     i.fa.fa-fw.fa-power-off
                     | Logout
+
+
     div(ui-view="main").container-fluid
+
     // Socket.ico
     script(src="/socket.io/socket.io.js")
     // jQuery
@@ -175,7 +180,7 @@ html(ng-app="Runner", lang="en")
             | Chat !
 
     // Chat
-    script(type="text/ng-template" id="chat.html")
+    script(type="text/ng-template" id="chatx.html")
       div.row
         div.col-lg-12
           div.page-header
@@ -212,7 +217,7 @@ html(ng-app="Runner", lang="en")
                       i.fa.fa-fw.fa-times
                   div.panel-chat-room
                     div.row
-                      div.col-sm-10.panel-messages
+                      div.col-xs-10.panel-messages
                         ul.messages(id="messages")
                           li.message(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="message.type")
                             div(ng-if="message.type != 'image'")
@@ -221,7 +226,7 @@ html(ng-app="Runner", lang="en")
                             div(ng-if="message.type == 'image'")
                               span.author(ng-if="message.user.username") {{message.user.username}}:
                               img.image(ng-src='{{message.data}}')
-                      div.col-sm-2.users
+                      div.col-xs-2.users
                         ul.user-list
                           li(ng-repeat="user in room.users")
                             i.fa.fa-user
@@ -239,6 +244,90 @@ html(ng-app="Runner", lang="en")
                 input.form-control(type='text', ng-model="message", ng-enter="send()")
                 div.input-group-btn
                   button.btn.btn-primary(type='button', ng-click="send()") Send
+
+    script(type="text/ng-template" id="chat.html")
+      .window-wrapper
+        .window-title
+          .title
+            span ChatIo
+          .expand
+            i.fa.fa-expand
+        .window-area
+          .conversation-list
+            ul
+              li(ng-repeat="room in serverRooms")
+                a(href="", ng-click="join(room)")
+                  i.fa.fa-fw(ng-class="room.isPrivate ? 'fa-lock offline':'fa-unlock online'")
+                  |{{room.name}}
+              li
+                a(href="", ng-click="addRoom()")
+                  i.fa.fa-fw.fa-plus
+                  | Add Room
+            .btn-group(dropdown='', is-open='status.isopen')
+              button.btn.btn-primary.dropdown-toggle(type='button', dropdown-toggle='', ng-disabled='disabled')
+                | Button dropdown
+                span.caret
+              ul.dropdown-menu(role='menu')
+                li
+                  a(href='#') Action
+                li
+                  a(href='#') Another action
+                li
+                  a(href='#') Something else here
+                li.divider
+                li
+                  a(href='#') Separated link
+          .chat-area
+            tabset.active-chat-rooms
+              tab(ng-repeat="room in activeRooms", active="room.isActive", select="activateRoom(room)")
+                tab-heading
+                  span(ng-if="room.notifications > 0").label.label-notifications.label-sm {{room.notifications}}
+                  | {{room.name}}
+                  a.leave(ng-click="leave(room)", ng-if="room.isActive && room.name != 'console'")
+                    i.fa.fa-fw.fa-times
+                .chat-list
+                  ul.messages(id="messages")
+                    li(ng-repeat="message in room.messages", id="{{message.id}}", ng-class="[message.type, {'me': message.user.username == user.username}]")
+                      div(ng-if="message.type != 'image'")
+                        span.name(ng-if="message.user.username") {{message.user.username}}:&nbsp;
+                        span.message {{message.data}}
+                      div(ng-if="message.type == 'image'")
+                        span.author(ng-if="message.user.username") {{message.user.username}}:
+                        img.image(ng-src='{{message.data}}')
+            .input-area
+              .input-wrapper
+                input(type='text', value='')
+                i.fa.fa-smile-o
+                i.fa.fa-paperclip
+              input.send-btn(type='button', value='Submit')
+          .right-tabs
+            tabset
+              tab
+                tab-heading
+                  i.fa.fa-users
+                h5.sidebar-heading In this room
+                ul.member-list
+                  li(ng-repeat="user in activeRoom.users")
+                    span.status.online
+                      i.fa.fa-circle-o
+                    |{{user}}
+                  li(ng-if="activeRoom.canInvite")
+                    a(href="", ng-click="inviteUser(activeRoom)")
+                      i.fa.fa-user-plus
+                      |&nbsp;Invite
+                h5.sidebar-heading Online users
+                ul.member-list
+                  li(ng-repeat="user in serverUsers")
+                    span.status.online
+                      i.fa.fa-circle-o
+                    |{{user.username}}
+              tab
+                tab-heading
+                  i.fa.fa-paperclip
+                {{activeRoom.canInvite|json}}
+              tab
+                tab-heading
+                  i.fa.fa-cog
 
     ///////////////////////////////////////////////////////////////////////////
     // Modals                                                                //
