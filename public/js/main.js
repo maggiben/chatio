@@ -95,7 +95,7 @@ Runner.factory('uuid', [function() {
 Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', 'localStorageServiceProvider', function($stateProvider, $urlRouterProvider, RestangularProvider, localStorageServiceProvider) {
 
     // Default route
-    $urlRouterProvider.otherwise( '/' );
+    $urlRouterProvider.otherwise( '/chat' );
 
     // Transform mongo _id field
     RestangularProvider.setRestangularFields({
@@ -108,7 +108,7 @@ Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', 'l
     localStorageServiceProvider.setPrefix('chatio');
 
     $stateProvider
-        .state('home', {
+        /*.state('home', {
             url: '/',
             views: {
                 'main': {
@@ -118,7 +118,7 @@ Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', 'l
             },
             data: { pageTitle: 'Home' },
             authenticate: true
-        })
+        })*/
         .state('chat', {
             url: '/chat',
             views: {

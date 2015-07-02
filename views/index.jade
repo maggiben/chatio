@@ -14,7 +14,7 @@ html(ng-app="Runner", lang="en")
     link(rel='apple-touch-icon-precomposed', sizes='72x72', href='images/apple-touch-icon-72-precomposed.png')
 
     // Bootstrap
-    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css")
+    link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
     // FontAwesome
     link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css")
     // Main Css File
@@ -61,8 +61,8 @@ html(ng-app="Runner", lang="en")
     // angular
     script(src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.1/angular.js")
     // ui-bootstrap
-    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.2/ui-bootstrap-tpls.min.js")
-    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.2/ui-bootstrap.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap.min.js")
     // ui-utils
     script(src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js")
     // ng-animate
@@ -86,14 +86,12 @@ html(ng-app="Runner", lang="en")
     script(type="text/ng-template" id="login.html")
       div.row
         div.col-lg-12
-          div.page-header
-            h4
-              i.fa.fa-fw.fa-home
-              |&nbsp;Login
+          h1.title.text-center Sign in
       div.row.login-form
-        div.col-md-12
+        div.col-md-4.col-md-offset-4
           alert(ng-repeat='alert in login.alerts', type='{{login.alert.type}}', close='login.closeAlert($index)') {{alert.msg}}
-        div.col-md-12
+      div.row
+        div.col-md-4.col-md-offset-4
           div.panel.panel-default
             div.panel-body
               form.form-horizontal(name='loginForm', role='form', ng-submit='login.submit()')
@@ -124,14 +122,12 @@ html(ng-app="Runner", lang="en")
     script(type="text/ng-template" id="register.html")
       div.row
         div.col-lg-12
-          div.page-header
-            h4
-              i.fa.fa-fw.fa-home
-              |&nbsp;Sign up
-      div.row.signup-form
-        div.col-md-12
+          h1.title.text-center Sign up
+      div.row.login-form
+        div.col-md-4.col-md-offset-4
           alert(ng-repeat='alert in signup.alerts', type='{{signup.alert.type}}', close='signup.closeAlert($index)') {{alert.msg}}
-        div.col-md-12
+      div.row
+        div.col-md-4.col-md-offset-4
           div.panel.panel-default
             div.panel-body
               form.form-horizontal(name='signupForm', role='form', ng-submit='signup.submit()')
@@ -254,7 +250,7 @@ html(ng-app="Runner", lang="en")
             i.fa.fa-expand
         .window-area
           .conversation-list
-            ul
+            ul.room-list
               li(ng-repeat="room in serverRooms")
                 a(href="", ng-click="join(room)")
                   i.fa.fa-fw(ng-class="room.isPrivate ? 'fa-lock offline':'fa-unlock online'")
@@ -263,11 +259,12 @@ html(ng-app="Runner", lang="en")
                 a(href="", ng-click="addRoom()")
                   i.fa.fa-fw.fa-plus
                   | Add Room
-            .btn-group(dropdown='', is-open='status.isopen')
-              button.btn.btn-primary.dropdown-toggle(type='button', dropdown-toggle='', ng-disabled='disabled')
-                | Button dropdown
-                span.caret
-              ul.dropdown-menu(role='menu')
+            .dropup.user-status(dropdown)
+              button.dropdown-toggle.online.text-left(dropdown-toggle)
+                i.fa.fa-fw.fa-circle-o
+                | {{user.username}}
+                span.fa.fa-fw.fa-angle-up
+              ul(role='menu').dropdown-menu
                 li
                   a(href='#') Action
                 li
@@ -276,7 +273,9 @@ html(ng-app="Runner", lang="en")
                   a(href='#') Something else here
                 li.divider
                 li
-                  a(href='#') Separated link
+                  a(href='#')
+                    i.fa.fa-fw.fa-power-off
+                    | Logout
           .chat-area
             tabset.active-chat-rooms
               tab(ng-repeat="room in activeRooms", active="room.isActive", select="activateRoom(room)")
@@ -292,14 +291,16 @@ html(ng-app="Runner", lang="en")
                         span.name(ng-if="message.user.username") {{message.user.username}}:&nbsp;
                         span.message {{message.data}}
                       div(ng-if="message.type == 'image'")
-                        span.author(ng-if="message.user.username") {{message.user.username}}:
+                        span.name(ng-if="message.user.username") {{message.user.username}}:
                         img.image(ng-src='{{message.data}}')
             .input-area
               .input-wrapper
-                input(type='text', value='')
-                i.fa.fa-smile-o
-                i.fa.fa-paperclip
-              input.send-btn(type='button', value='Submit')
+                .row
+                  .col-xs-9
+                    input(type='text', ng-model="message", ng-enter="send()")
+                    i.fa.fa-smile-o
+                  .col-xs-3
+                    input.send-btn(type='button', value='Submit', ng-click="send()")
           .right-tabs
             tabset
               tab
@@ -318,9 +319,10 @@ html(ng-app="Runner", lang="en")
                 h5.sidebar-heading Online users
                 ul.member-list
                   li(ng-repeat="user in serverUsers")
-                    span.status.online
-                      i.fa.fa-circle-o
-                    |{{user.username}}
+                    a(href="", ng-click="privateChat(user)")
+                      span.status.online
+                        i.fa.fa-circle-o
+                      |{{user.username}}
               tab
                 tab-heading
                   i.fa.fa-paperclip

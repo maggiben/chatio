@@ -11,6 +11,10 @@ body {
 button, .btn {
     border-radius: 0px;
 }
+h1.title {
+    margin: 10px;
+    color: #fafafa;
+}
 .form-control, .input-group-addon, input {
     border-radius: 0px;
 }
@@ -186,7 +190,7 @@ button, .btn {
     top: 0;
     bottom: 0;
     overflow-y: scroll;
-    ul {
+    ul.room-list {
         list-style: none;
         padding: 0;
         li {
@@ -213,20 +217,46 @@ button, .btn {
                 }
             }
         }
-    }
-    .online {
-        color: #82cf85;
-    }
-    .idle {
-        color: #ffac69;
-    }
-    .offline {
-        color: #f57e7d;
+        .online {
+            color: #82cf85;
+        }
+        .idle {
+            color: #ffac69;
+        }
+        .offline {
+            color: #f57e7d;
+        }
     }
     .user-status {
         width: 100%;
         position: absolute;
         bottom: 0px;
+        button {
+            width: 100%;
+            background-color: #445166;
+            color: #bcc3d0;
+            border: none;
+            line-height: 25px;
+            padding: 10px 15px;
+            &:hover {
+                color: #fff;
+            }
+            &.online {
+                i {
+                    color: #82cf85;
+                }
+            }
+            &.idle {
+                color: #ffac69;
+            }
+            &.offline i {
+                color: #f57e7d;
+            }
+        }
+        .dropdown-menu {
+            border-radius: 0px;
+            background-color: #EEF2F8;
+        }
     }
 }
 .conversation-list ul li a:hover,.conversation-list ul li.active a {
@@ -278,11 +308,13 @@ button, .btn {
         bottom: 44px;
         overflow-y: auto;
         outline: none;
+        overflow-wrap: break-word;
     }
     ul.messages {
         list-style: none;
         padding: 0;
         margin-right: -4px;
+        padding-bottom: 30px;
         & > li {
             border-top: 1px solid #F1F4F5;
             overflow: hidden;
@@ -326,6 +358,13 @@ button, .btn {
             }
         }
     }
+
+    .label-notifications {
+        font-weight: normal;
+        font-size: 0.6em;
+        background-color: #F57E7D;
+        margin-right: 5px;
+    }
 }
 .input-area {
     background: #e4eaee;
@@ -342,6 +381,8 @@ button, .btn {
         border-radius: 5px;
         overflow: hidden;
         float: left;
+        width: 100%;
+        position: relative;
         input {
             height: 30px;
             line-height: 30px;
@@ -350,17 +391,27 @@ button, .btn {
             padding: 0 10px;
             outline: none;
             color: #5D7185;
-            min-width: 271px;
+            min-width: 100%;
+            &[type="button"] {
+                color: #fafafa;
+                background-color: #A0B4C0;
+                &:hover {
+                    background-color: #505D71;
+                    color: #fff;
+                }
+            }
         }
         i {
             font-size: 18px;
             color: #a0b4c0;
-            margin-right: 10px;
-            margin-top:8px;
+            margin-right: 0px;
+            margin-top: 6px;
             cursor: pointer;
+            position: absolute;
+            right: 0px;
         }
     }
-    & > input {
+    & > input[type="text"] {
         background: #a0b4c0;
         border: none;
         letter-spacing:1px;
@@ -371,7 +422,6 @@ button, .btn {
         height: 30px;
         line-height: 30px;
         cursor: pointer;
-        font-family: 'Open Sans', Arial, sans-serif;
         outline: none;
     }
 }
@@ -415,57 +465,6 @@ button, .btn {
         margin: 6px 0px;
         background-color: #EEF2F8;
         color: #505D71;
-    }
-}
-.right-tabsx {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    border-left: 1px solid #cfdae1;
-    border-top: 1px solid #cfdae1;
-    width: 175px;
-    & > ul.tabs {
-        overflow: hidden;
-        list-style: none;
-        padding: 0;
-        & > li {
-            float: left;
-            width: 33.3%;
-            text-align: center;
-            border-bottom: 1px solid #cfdae1;
-            & > a {
-                border-left: 1px solid #cfdae1;
-                color: #72a3ff;
-                display: block;
-                background: #eef2f8;
-                padding: 8px 0;
-                & > i {
-                    font-size: 18px;
-                }
-            }
-        }
-        & > li.active {
-            border-bottom: none;
-            & > a {
-                background: #fff;
-                color: #c3ccd3;
-            }
-        }
-        & > li:first-child {
-            & > a {
-                border-left: none;
-            }
-        }
-    }
-    & > .fa-cog {
-        position: absolute;
-        bottom: 14px;
-        right: 14px;
-        color: #a0b4c0;
-        font-size: 18px;
-        cursor: pointer;
     }
 }
 ul.tabs-container {
