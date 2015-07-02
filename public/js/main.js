@@ -561,21 +561,19 @@ Runner.controller('MainCtrl', ['$scope', '$cookies', '$state', '$q', 'Restangula
     $scope.$on('userLoggedIn', function(event, user){
         $scope.user = user;
         $state.transitionTo('chat');
-
-        /*var ipaddr = location.href.match('rhcloud.com') ? 'http://chatio-laboratory.rhcloud.com:8000':'http://localhost:8080'
-        mySocket.connect({
-            host: ipaddr
-        });
-        mySocket.emit('userLoggedIn', {data: user.name});
-        */
     });
 
     // Disconnect socket cleanup user enviroment
     $scope.$on('userLoggedOut', function(event, user){
         $scope.user = null;
-        //mySocket.emit('userLoggedOut', {data: 'myMessage'});
-        //mySocket.disconnect();
+        localStorageService.remove('token');
+        $cookies.remove('token');
+        $state.transitionTo('login');
     });
+
+    $scope.logOut = function() {
+        $scope.$emit('userLoggedOut');
+    }
 }]);
 
 ///////////////////////////////////////////////////////////////////////////////

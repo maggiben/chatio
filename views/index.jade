@@ -6,12 +6,9 @@ html(ng-app="Runner", lang="en")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="robots", content="noindex, nofollow")
     meta(name="viewport" content="width=device-width")
-    meta(name='description', content='Apicatus is a tool designed to mock, test, analyze and monitor APIs')
-    meta(name='author', content='Apicatus')
-    link(rel='icon', type='image/png', href='images/logo.png')
-    link(rel='apple-touch-icon-precomposed', sizes='144x144', href='images/apple-touch-icon-144-precomposed.png')
-    link(rel='apple-touch-icon-precomposed', sizes='114x114', href='images/apple-touch-icon-114-precomposed.png')
-    link(rel='apple-touch-icon-precomposed', sizes='72x72', href='images/apple-touch-icon-72-precomposed.png')
+    meta(name='description', content='Realtime Chat Application')
+    meta(name='author', content='Benjamin')
+    link(rel='icon', type='image/png', href='images/logo.png', sizes="64x64")
 
     // Bootstrap
     link(rel="stylesheet", href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css")
@@ -164,6 +161,8 @@ html(ng-app="Runner", lang="en")
     script(type="text/ng-template" id="chat.html")
       .window-wrapper
         .window-title
+          .logo
+            img(src="images/logo.png")
           .title
             span ChatIo
           .expand
@@ -186,14 +185,14 @@ html(ng-app="Runner", lang="en")
                 span.fa.fa-fw.fa-angle-up
               ul(role='menu').dropdown-menu
                 li
-                  a(href='#') Action
+                  a(href='#') Private chat
                 li
-                  a(href='#') Another action
+                  a(href='#') Add Room
                 li
-                  a(href='#') Something else here
+                  a(href='#') Settings
                 li.divider
                 li
-                  a(href='#')
+                  a(href='#', ng-click="logOut()")
                     i.fa.fa-fw.fa-power-off
                     | Logout
           .chat-area
@@ -246,7 +245,6 @@ html(ng-app="Runner", lang="en")
               tab
                 tab-heading
                   i.fa.fa-paperclip
-                {{activeRoom.canInvite|json}}
               tab
                 tab-heading
                   i.fa.fa-cog
