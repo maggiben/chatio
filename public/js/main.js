@@ -108,17 +108,6 @@ Runner.config(['$stateProvider', '$urlRouterProvider', 'RestangularProvider', 'l
     localStorageServiceProvider.setPrefix('chatio');
 
     $stateProvider
-        /*.state('home', {
-            url: '/',
-            views: {
-                'main': {
-                    templateUrl: 'home.html',
-                    controller: 'HomeCtrl as home'
-                }
-            },
-            data: { pageTitle: 'Home' },
-            authenticate: true
-        })*/
         .state('chat', {
             url: '/chat',
             views: {
