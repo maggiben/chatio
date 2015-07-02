@@ -1,4 +1,4 @@
-## ChatIo [ [![Build Status](https://travis-ci.org/maggiben/chatio.svg?branch=master)](https://travis-ci.org/maggiben/chatio.svg) [![Coverage Status](https://coveralls.io/repos/maggiben/chatio/badge.svg)](https://coveralls.io/r/maggiben/chatio) [![Code Climate](https://codeclimate.com/repos/5594f28b69568062c002444f/badges/0495d29bd5193aec95bf/gpa.svg)](https://codeclimate.com/repos/5594f28b69568062c002444f/feed) ]
+## ChatIo [ [![Build Status](https://travis-ci.org/maggiben/chatio.svg?branch=master)](https://travis-ci.org/maggiben/chatio.svg) [![Coverage Status](https://coveralls.io/repos/maggiben/chatio/badge.svg)](https://coveralls.io/r/maggiben/chatio) [![Dependency Status](https://gemnasium.com/maggiben/chatio.svg)](https://gemnasium.com/maggiben/chatio) [![Code Climate](https://codeclimate.com/repos/5594f28b69568062c002444f/badges/0495d29bd5193aec95bf/gpa.svg)](https://codeclimate.com/repos/5594f28b69568062c002444f/feed) ]
 
 ## Quick Start
 
