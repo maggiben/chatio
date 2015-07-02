@@ -316,6 +316,14 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
         room.notifications = 0;
     };
 
+    $scope.isPrivate = function(room) {
+        if(room.isPrivate && room.allowed.indexOf($scope.user.username) < 0) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     $scope.post = function(message, type) {
         message.id = uuid.newuuid();
         message.rooms.forEach(function(forRoom){

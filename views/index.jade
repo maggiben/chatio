@@ -173,7 +173,7 @@ html(ng-app="Runner", lang="en")
             ul.room-list
               li(ng-repeat="room in serverRooms")
                 a(href="", ng-click="join(room)")
-                  i.fa.fa-fw(ng-class="room.isPrivate ? 'fa-lock offline':'fa-unlock online'")
+                  i.fa.fa-fw(ng-class="isPrivate(room) ? 'fa-lock offline':'fa-unlock online'")
                   |{{room.name}}
               li
                 a(href="", ng-click="addRoom()")

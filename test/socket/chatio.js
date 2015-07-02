@@ -69,6 +69,42 @@ describe('Socket Server connection', function(){
 
     });
 
+    it('should not join a private room', function(done){
+
+        var room = {
+            name: 'staging' // this is a private pre-set room
+        };
+
+        var socket = io.connect(socketURL, options)
+
+        socket.emit('join', room);
+
+        socket.on('alert', function(result){
+            expect(result).to.be.equal('This room is private.');
+            socket.removeAllListeners("alert");
+            done();
+        });
+
+    });
+
+    it('should not join a room more than one time', function(done){
+
+        var room = {
+            name: 'coverage' // this is a private pre-set room
+        };
+
+        var socket = io.connect(socketURL, options)
+
+        socket.emit('join', room);
+        socket.emit('join', room);
+
+        socket.on('alert', function(result){
+            expect(result).to.be.equal('You have already joined this room.');
+            socket.removeAllListeners("alert");
+            done();
+        });
+
+    });
     it('should join a room and send a message', function(done){
 
         var room = {
@@ -95,6 +131,37 @@ describe('Socket Server connection', function(){
 
         socket.on('message', function(result){
             expect(result.data).to.be.equal('Hello world');
+            socket.removeAllListeners("message");
+            done();
+        });
+    });
+
+    it('should send a giphy search term and receive an image', function(done){
+
+        var room = {
+            name: 'console',
+            isActive: true,
+            notifications: 0,
+            messages: [],
+            canInvite: false,
+            isPrivate: false,
+            owners: [],
+            users: []
+        };
+
+        var socket = io.connect(socketURL, options)
+
+        socket.emit('join', room);
+
+        socket.emit('message', {
+            user: 'ariel',
+            rooms: ['console'],
+            data: '/giphy cats',
+            type: 'text'
+        });
+
+        socket.on('message', function(result){
+            expect(result.data).to.contain('gif');
             socket.removeAllListeners("message");
             done();
         });
@@ -134,6 +201,33 @@ describe('Socket Server connection', function(){
             socket.removeAllListeners("update");
             done();
         });
+    });
+
+    it('should be able to invite another user to a room', function(done){
+
+        var room = {
+            name: 'coverage',
+            isActive: true,
+            notifications: 0,
+            messages: [],
+            canInvite: false,
+            isPrivate: false,
+            owners: [],
+            allowed: [],
+            users: []
+        };
+
+        var socket = io.connect(socketURL, options)
+
+        socket.emit('join', room);
+
+        socket.emit('invite', {
+            room: room,
+            username: 'steve'
+        });
+
+        // Expect no response on this socket
+        done();
     });
 
     it('should not be able to invite self', function(done){

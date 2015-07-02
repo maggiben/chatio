@@ -44,6 +44,8 @@ var config = require('../config'),
     giphy = require('giphy-wrapper')('dc6zaTOxFJmzC');
 
 var users = [];
+
+// Default rooms
 var rooms = [{
     name: 'support',
     isPrivate: false,
@@ -55,11 +57,12 @@ var rooms = [{
 }, {
     name: 'staging',
     isPrivate: true,
-    allowed: ['bmaggi', 'toby'],
+    allowed: ['bmaggi'],
     users: [],
     messages: [],
     notifications: 0
 }];
+
 var sockets = [];
 var io = null;
 
@@ -133,17 +136,8 @@ exports.setup = function(server) {
                 var index = room.users.indexOf(socket.user.username);
                 room.users.splice(index, 1);
             });
-            /*socket.broadcast.in(roomOptions.name).emit("notifyRoom", {
-                text: socket.id + 'has left',
-                type: 'notifycation'
-            });*/
             updateClients(io);
             return;
-            var id = socket.user._id;
-            // Remove Socket from list
-            sockets = sockets.filter(function(socket){
-                return socket.user._id != id;
-            });
         });
 
         socket.on('join', function(roomOptions) {
@@ -225,7 +219,6 @@ exports.setup = function(server) {
                 socket.emit('alert', 'Cannot invite self.');
                 return;
             }
-            console.log("invite: ", options);
             var index = getUserIndexByName(users, options.username);
             var room = getRoomIndexByName(rooms, options.room.name);
             if(room >= 0 && index >= 0){
@@ -319,7 +312,6 @@ exports.setup = function(server) {
                         // check error
                         return false;
                     }
-                    console.log(results)
                     if(results.data.length > 0) {
                         message.data = results.data[0].images.fixed_width_small.url;
                         message.type = 'image';
