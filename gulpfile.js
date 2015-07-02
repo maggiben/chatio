@@ -63,8 +63,7 @@ gulp.task('watch', function() {
 // Coverage report                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 gulp.task('coveralls', function () {
-    if (!process.env.CI) return;
-        return gulp.src('./coverage/lcov.info')
+    return gulp.src(['./coverage/lcov.info'])
         .pipe(coveralls());
 });
 
@@ -72,6 +71,11 @@ gulp.task('coveralls', function () {
 // Default Task                                                              //
 ///////////////////////////////////////////////////////////////////////////////
 gulp.task('default', ['lint', 'watch']);
+
+///////////////////////////////////////////////////////////////////////////////
+// Default Task                                                              //
+///////////////////////////////////////////////////////////////////////////////
+gulp.task('test', ['mocha', 'coveralls']);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Develop Task                                                              //

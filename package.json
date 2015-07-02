@@ -4,7 +4,7 @@
   "description": "Chat App",
   "main": "app.js",
   "scripts": {
-    "test": "grunt test",
+    "test": "gulp test",
     "start": "node app.js"
   },
   "repository": {
