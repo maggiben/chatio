@@ -107,7 +107,7 @@ exports.setup = function(server) {
                         socket.emit('message', message);
                     } else {
                         // add to history
-                        db.lpush('chatio:room:'+room+':history', socket.user.username+':'+message.data);
+                        db.lpush('chatio:room:'+room+':history', socket.user.username+':'+escape(message.data)+':'+escape(message.timestamp));
                         //db.hmset('chatio:room:' + room + ':history', message);
                         io.sockets.in(room).emit('message', message);
                     }

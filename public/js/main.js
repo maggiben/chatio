@@ -251,7 +251,8 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
                 user: $scope.user,
                 rooms: [$scope.activeRoom.name],
                 data: $scope.message,
-                type: 'text'
+                type: 'text',
+                timestamp: new Date()
             });
         }
         // Clear message
@@ -373,12 +374,14 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
     });
     mySocket.on('history', function(result){
         result.history.forEach(function(history){
+            console.log(history)
             $scope.post({
                 rooms: result.rooms,
-                data: history.split(':')[1],
+                data: unescape(history.split(':')[1]),
                 user: {
-                    username: history.split(':')[0]
+                    username: history.split(':')[0],
                 },
+                timestamp: new Date(unescape(history.split(':')[2])),
                 type: 'history'
             }, 'history');
         });

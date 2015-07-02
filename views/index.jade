@@ -209,6 +209,7 @@ html(ng-app="Runner", lang="en")
                       div(ng-if="message.type != 'image'")
                         span.name(ng-if="message.user.username") {{message.user.username}}:&nbsp;
                         span.message {{message.data}}
+                        span.timestamp {{message.timestamp | date:'shortTime'}}
                       div(ng-if="message.type == 'image'")
                         span.name(ng-if="message.user.username") {{message.user.username}}:
                         img.image(ng-src='{{message.data}}')
