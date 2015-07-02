@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// @file         : notifier.js                                               //
+// @file         : chatio.js                                                 //
 // @summary      : Socket.io Notification Manager                            //
 // @version      : 0.1                                                       //
 // @project      : Apicatus                                                  //

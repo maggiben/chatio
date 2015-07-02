@@ -48,6 +48,14 @@ describe('Socket Server connection', function(){
         })
     });
 
+    it('should disconnect', function(done){
+        var socket = io.connect(socketURL, options);
+
+        socket.disconnect();
+
+        done();;
+    });
+
     it('should join a room', function(done){
 
         var room = {
