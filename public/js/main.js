@@ -281,6 +281,10 @@ Runner.controller('ChatCtrl', ['$scope', 'mySocket', 'uuid', '$location', '$anch
 
     // Create private chat
     $scope.privateChat = function(user) {
+        if(user.username === $scope.user.username) {
+            alert('You cannot chat to youself !');
+            return;
+        }
         var room = Room.findOrCreate({
             name: $scope.user.username + ':' + user.username,
             allowed: [$scope.user.username, user.username],

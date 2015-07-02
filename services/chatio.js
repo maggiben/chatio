@@ -310,6 +310,7 @@ exports.setup = function(server) {
                 giphy.search(message.data.replace('/giphy','').trim(), 1, 0, function (error, results) {
                     if (error) {
                         // check error
+                        console.log("error: ", error, message.data.replace('/giphy','').trim());
                         return false;
                     }
                     if(results.data.length > 0) {
